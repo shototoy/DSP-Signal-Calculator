@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DSP Operations on Sequences</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 30px;
+        }
+        h1 {
+            text-align: center;
+            color: #667eea;
+            margin-bottom: 30px;
+            font-size: 2em;
+        }
+        .signal-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        .signal-btn {
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 16px;
+            transition: all 0.3s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .signal-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+        }
+        .signal-btn:active {
+            transform: translateY(0);
+        }
+        .function-display {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            border-left: 4px solid #667eea;
+        }
+        .function-display h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        .function-text {
+            font-size: 18px;
+            font-weight: 600;
+            color: #495057;
+            background: white;
+            padding: 15px;
+            border-radius: 5px;
+            word-wrap: break-word;
+            font-family: 'Courier New', monospace;
+        }
+        .action-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .btn-primary {
+            padding: 12px;
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: transform 0.2s;
+        }
+        .btn-secondary {
+            padding: 12px;
+            background: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: transform 0.2s;
+        }
+        .btn-primary:hover, .btn-secondary:hover {
+            transform: translateY(-2px);
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            animation: fadeIn 0.3s;
+        }
+        .modal.show {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: slideIn 0.3s;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes slideIn {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e9ecef;
+        }
+        .modal-header h2 {
+            color: #667eea;
+            margin: 0;
+        }
+        .close {
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            color: #aaa;
+            transition: color 0.3s;
+        }
+        .close:hover {
+            color: #000;
+        }
+        .input-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #333;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        .param-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        .modal-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .operation-section {
+            background: #fff3cd;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 4px solid #ffc107;
+        }
+        .charts-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 30px;
+        }
+        .chart-wrapper {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .chart-title {
+            text-align: center;
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+        .info {
+            background: #d1ecf1;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            border-left: 4px solid #17a2b8;
+            font-size: 14px;
+        }
+        @media (max-width: 768px) {
+            .charts-container {
+                grid-template-columns: 1fr;
+            }
+            .param-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔊 Discrete Signal Processing Operations</h1>
+        
+        <div class="info">
+            <strong>Instructions:</strong> Click on a signal type button to add it to your composite function. You can add multiple signals together or subtract them. Then plot the final signal!
+        </div>
+
+        <h3 style="color: #667eea; margin-bottom: 15px;">Select Signal Types:</h3>
+        <div class="signal-buttons">
+            <button class="signal-btn" onclick="openModal('impulse')">δ[n] Unit Impulse</button>
+            <button class="signal-btn" onclick="openModal('step')">u[n] Unit Step</button>
+            <button class="signal-btn" onclick="openModal('ramp')">r[n] Unit Ramp</button>
+            <button class="signal-btn" onclick="openModal('exp')">a^n Exponential</button>
+            <button class="signal-btn" onclick="openModal('sin')">sin(ωn) Sinusoid</button>
+            <button class="signal-btn" onclick="openModal('cos')">cos(ωn) Cosine</button>
+        </div>
+
+        <div class="function-display">
+            <h3>Composite Function:</h3>
+            <div class="function-text" id="compositeFunction">No signals added yet</div>
+            <div class="action-buttons">
+                <button class="btn-primary" onclick="plotComposite()">📈 Plot Signal</button>
+                <button class="btn-secondary" onclick="clearComposite()">🗑️ Clear All</button>
+            </div>
+        </div>
+
+        <div class="input-group">
+            <label>Signal Range:</label>
+            <div class="param-grid">
+                <input type="number" id="globalRangeStart" value="-5" placeholder="Start n">
+                <input type="number" id="globalRangeEnd" value="10" placeholder="End n">
+            </div>
+        </div>
+
+        <div class="operation-section">
+            <h3 style="margin-bottom: 15px; color: #856404;">Apply Operation to Signal:</h3>
+            
+            <div class="input-group">
+                <label>Operation Type:</label>
+                <select id="operationType">
+                    <option value="shift">Time Shift: x[n - k]</option>
+                    <option value="scale">Time Scale: x[an]</option>
+                    <option value="fold">Time Folding: x[-n]</option>
+                    <option value="add">Addition: x[n] + constant</option>
+                    <option value="multiply">Multiplication: x[n] × constant</option>
+                    <option value="reverse">Reverse Sequence</option>
+                </select>
+            </div>
+
+            <div class="input-group">
+                <label>Parameter Value:</label>
+                <input type="number" id="paramValue" placeholder="e.g., 2 for shift by 2">
+            </div>
+
+            <button class="btn-primary" onclick="applyOperation()">⚡ Apply Operation</button>
+        </div>
+
+        <div class="charts-container">
+            <div class="chart-wrapper">
+                <div class="chart-title">Original Signal: x[n]</div>
+                <canvas id="originalChart"></canvas>
+            </div>
+            <div class="chart-wrapper">
+                <div class="chart-title">Output Signal: y[n]</div>
+                <canvas id="outputChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div id="signalModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Add Signal</h2>
+                <span class="close" onclick="closeModal()">&times;</span>
+            </div>
+            
+            <div id="modalBody"></div>
+            
+            <div class="modal-buttons">
+                <button class="btn-primary" onclick="addToFunction()">➕ Add to Function</button>
+                <button class="btn-secondary" onclick="closeModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let compositeSignals = [];
+        let originalData = [];
+        let originalIndices = [];
+        let originalChart = null;
+        let outputChart = null;
+        let currentSignalType = '';
+
+        function openModal(signalType) {
+            currentSignalType = signalType;
+            const modal = document.getElementById('signalModal');
+            const modalTitle = document.getElementById('modalTitle');
+            const modalBody = document.getElementById('modalBody');
+            
+            let title = '';
+            let bodyHTML = '';
+            
+            switch(signalType) {
+                case 'impulse':
+                    title = 'Unit Impulse: δ[n]';
+                    bodyHTML = generateBasicModalBody();
+                    break;
+                case 'step':
+                    title = 'Unit Step: u[n]';
+                    bodyHTML = generateBasicModalBody();
+                    break;
+                case 'ramp':
+                    title = 'Unit Ramp: r[n]';
+                    bodyHTML = generateBasicModalBody();
+                    break;
+                case 'exp':
+                    title = 'Exponential: a^n';
+                    bodyHTML = generateExpModalBody();
+                    break;
+                case 'sin':
+                    title = 'Sinusoid: A·sin(ωn + φ)';
+                    bodyHTML = generateSinusoidModalBody();
+                    break;
+                case 'cos':
+                    title = 'Cosine: A·cos(ωn + φ)';
+                    bodyHTML = generateSinusoidModalBody();
+                    break;
+            }
+            
+            modalTitle.textContent = title;
+            modalBody.innerHTML = bodyHTML;
+            modal.classList.add('show');
+        }
+
+        function generateBasicModalBody() {
+            return `
+                <div class="input-group">
+                    <label>Operation (Add/Subtract):</label>
+                    <select id="modalOperation">
+                        <option value="+">+ Add</option>
+                        <option value="-">- Subtract</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Time Shift (k):</label>
+                    <input type="number" id="modalShift" value="0" placeholder="e.g., -2 for [n+2], 3 for [n-3]">
+                    <small style="color: #6c757d;">Positive shifts right, negative shifts left</small>
+                </div>
+                <div class="input-group">
+                    <label>Amplitude Multiplier:</label>
+                    <input type="number" id="modalAmplitude" value="1" step="0.1" placeholder="e.g., 2 for 2×signal">
+                </div>
+            `;
+        }
+
+        function generateExpModalBody() {
+            return `
+                <div class="input-group">
+                    <label>Operation (Add/Subtract):</label>
+                    <select id="modalOperation">
+                        <option value="+">+ Add</option>
+                        <option value="-">- Subtract</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Base (a):</label>
+                    <input type="number" id="modalExpBase" value="0.8" step="0.1" placeholder="e.g., 0.8, 0.5">
+                </div>
+                <div class="input-group">
+                    <label>Time Shift (k):</label>
+                    <input type="number" id="modalShift" value="0" placeholder="e.g., -2 for [n+2]">
+                </div>
+                <div class="input-group">
+                    <label>Amplitude Multiplier:</label>
+                    <input type="number" id="modalAmplitude" value="1" step="0.1">
+                </div>
+            `;
+        }
+
+        function generateSinusoidModalBody() {
+            return `
+                <div class="input-group">
+                    <label>Operation (Add/Subtract):</label>
+                    <select id="modalOperation">
+                        <option value="+">+ Add</option>
+                        <option value="-">- Subtract</option>
+                    </select>
+                </div>
+                <div class="param-grid">
+                    <div class="input-group">
+                        <label>Amplitude (A):</label>
+                        <input type="number" id="modalSinAmp" value="1" step="0.1">
+                    </div>
+                    <div class="input-group">
+                        <label>Frequency (ω):</label>
+                        <input type="number" id="modalSinFreq" value="0.5" step="0.1">
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>Phase (φ in radians):</label>
+                    <input type="number" id="modalSinPhase" value="0" step="0.1">
+                </div>
+                <div class="input-group">
+                    <label>Time Shift (k):</label>
+                    <input type="number" id="modalShift" value="0">
+                </div>
+            `;
+        }
+
+        function closeModal() {
+            document.getElementById('signalModal').classList.remove('show');
+        }
+
+        function addToFunction() {
+            const operation = document.getElementById('modalOperation').value;
+            const shift = parseInt(document.getElementById('modalShift').value) || 0;
+            const amplitude = parseFloat(document.getElementById('modalAmplitude')?.value) || 1;
+            
+            let signalObj = {
+                type: currentSignalType,
+                operation: operation,
+                shift: shift,
+                amplitude: amplitude
+            };
+            
+            let notation = '';
+            const shiftStr = shift === 0 ? 'n' : shift > 0 ? `n-${shift}` : `n+${Math.abs(shift)}`;
+            const ampStr = amplitude === 1 ? '' : `${amplitude}×`;
+            
+            switch(currentSignalType) {
+                case 'impulse':
+                    notation = `${ampStr}δ[${shiftStr}]`;
+                    break;
+                case 'step':
+                    notation = `${ampStr}u[${shiftStr}]`;
+                    break;
+                case 'ramp':
+                    notation = `${ampStr}r[${shiftStr}]`;
+                    break;
+                case 'exp':
+                    const base = parseFloat(document.getElementById('modalExpBase').value) || 0.8;
+                    signalObj.base = base;
+                    notation = `${ampStr}(${base})^${shiftStr}`;
+                    break;
+                case 'sin':
+                case 'cos':
+                    const amp = parseFloat(document.getElementById('modalSinAmp').value) || 1;
+                    const freq = parseFloat(document.getElementById('modalSinFreq').value) || 0.5;
+                    const phase = parseFloat(document.getElementById('modalSinPhase').value) || 0;
+                    signalObj.sinAmp = amp;
+                    signalObj.sinFreq = freq;
+                    signalObj.sinPhase = phase;
+                    const funcName = currentSignalType === 'sin' ? 'sin' : 'cos';
+                    const phaseStr = phase === 0 ? '' : phase > 0 ? `+${phase}` : `${phase}`;
+                    notation = `${amp}×${funcName}(${freq}×${shiftStr}${phaseStr})`;
+                    break;
+            }
+            
+            signalObj.notation = notation;
+            compositeSignals.push(signalObj);
+            updateCompositeDisplay();
+            closeModal();
+        }
+
+        function updateCompositeDisplay() {
+            const display = document.getElementById('compositeFunction');
+            if (compositeSignals.length === 0) {
+                display.textContent = 'No signals added yet';
+                return;
+            }
+            
+            let text = '';
+            compositeSignals.forEach((signal, index) => {
+                if (index === 0) {
+                    text += signal.notation;
+                } else {
+                    text += ` ${signal.operation} ${signal.notation}`;
+                }
+            });
+            
+            display.textContent = text;
+        }
+
+        function clearComposite() {
+            compositeSignals = [];
+            updateCompositeDisplay();
+        }
+
+        function evaluateSignal(n, signal) {
+            const adjustedN = n - signal.shift;
+            let value = 0;
+            
+            switch(signal.type) {
+                case 'impulse':
+                    value = adjustedN === 0 ? 1 : 0;
+                    break;
+                case 'step':
+                    value = adjustedN >= 0 ? 1 : 0;
+                    break;
+                case 'ramp':
+                    value = adjustedN >= 0 ? adjustedN : 0;
+                    break;
+                case 'exp':
+                    value = Math.pow(signal.base, adjustedN);
+                    break;
+                case 'sin':
+                    value = signal.sinAmp * Math.sin(signal.sinFreq * adjustedN + signal.sinPhase);
+                    break;
+                case 'cos':
+                    value = signal.sinAmp * Math.cos(signal.sinFreq * adjustedN + signal.sinPhase);
+                    break;
+            }
+            
+            return value * signal.amplitude;
+        }
+
+        function plotComposite() {
+            if (compositeSignals.length === 0) {
+                alert('Please add at least one signal to the function!');
+                return;
+            }
+            
+            const start = parseInt(document.getElementById('globalRangeStart').value);
+            const end = parseInt(document.getElementById('globalRangeEnd').value);
+            
+            if (isNaN(start) || isNaN(end) || start >= end) {
+                alert('Invalid range!');
+                return;
+            }
+            
+            originalIndices = [];
+            originalData = [];
+            
+            for (let n = start; n <= end; n++) {
+                originalIndices.push(n);
+                let sum = 0;
+                
+                compositeSignals.forEach(signal => {
+                    const value = evaluateSignal(n, signal);
+                    if (signal.operation === '-') {
+                        sum -= value;
+                    } else {
+                        sum += value;
+                    }
+                });
+                
+                originalData.push(sum);
+            }
+            
+            createChart('originalChart', originalIndices, originalData, 'Original Signal: x[n]', 'original');
+        }
+
+        function applyOperation() {
+            if (originalData.length === 0) {
+                alert('Please plot the original signal first!');
+                return;
+            }
+
+            const opType = document.getElementById('operationType').value;
+            const param = parseFloat(document.getElementById('paramValue').value) || 0;
+
+            let outputData = [];
+            let outputIndices = [];
+
+            switch(opType) {
+                case 'shift':
+                    outputIndices = originalIndices.map(n => n + param);
+                    outputData = [...originalData];
+                    break;
+                case 'scale':
+                    if (param === 0) {
+                        alert('Scale factor cannot be 0!');
+                        return;
+                    }
+                    outputIndices = originalIndices.map(n => n / param);
+                    outputData = [...originalData];
+                    break;
+                case 'fold':
+                    outputIndices = originalIndices.map(n => -n).reverse();
+                    outputData = [...originalData].reverse();
+                    break;
+                case 'add':
+                    outputIndices = [...originalIndices];
+                    outputData = originalData.map(x => x + param);
+                    break;
+                case 'multiply':
+                    outputIndices = [...originalIndices];
+                    outputData = originalData.map(x => x * param);
+                    break;
+                case 'reverse':
+                    outputIndices = [...originalIndices].reverse();
+                    outputData = [...originalData].reverse();
+                    break;
+            }
+
+            createChart('outputChart', outputIndices, outputData, 'Output Signal: y[n]', 'output');
+        }
+
+        function createChart(canvasId, indices, data, title, type) {
+            const ctx = document.getElementById(canvasId).getContext('2d');
+            
+            if ((type === 'original' && originalChart) || (type === 'output' && outputChart)) {
+                if (type === 'original') {
+                    originalChart.destroy();
+                } else {
+                    outputChart.destroy();
+                }
+            }
+
+            const chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: indices,
+                    datasets: [{
+                        label: title,
+                        data: data,
+                        borderColor: type === 'original' ? '#667eea' : '#f093fb',
+                        backgroundColor: type === 'original' ? 'rgba(102, 126, 234, 0.1)' : 'rgba(240, 147, 251, 0.1)',
+                        borderWidth: 2,
+                        pointRadius: 5,
+                        pointBackgroundColor: type === 'original' ? '#667eea' : '#f093fb',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        tension: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'n (sample index)',
+                                font: {
+                                    weight: 'bold'
+                                }
+                            },
+                            grid: {
+                                color: 'rgba(0,0,0,0.05)'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Amplitude',
+                                font: {
+                                    weight: 'bold'
+                                }
+                            },
+                            grid: {
+                                color: 'rgba(0,0,0,0.05)'
+                            }
+                        }
+                    }
+                }
+            });
+
+            if (type === 'original') {
+                originalChart = chart;
+            } else {
+                outputChart = chart;
+            }
+        }
+    </script>
+</body>
+</html>
