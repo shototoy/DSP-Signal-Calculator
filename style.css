@@ -19,7 +19,8 @@ body {
     border-radius: 15px;
     box-shadow: 0 20px 60px rgba(0,0,0,0.3);
     padding: 30px;
-    min-height: calc(100vh - 40px);
+    min-height: calc(100vh - 10vh);
+    max-height: calc(100vh - 4vh);
     display: flex;
     flex-direction: column;
     position: relative;
