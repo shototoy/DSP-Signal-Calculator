@@ -11,73 +11,87 @@
     <div class="container">
         <h1>🔊 Discrete Signal Processing Operations</h1>
         
-        <div class="info">
-            <strong>Instructions:</strong> Click on a signal type button to add it to your composite function. You can add multiple signals together or subtract them. Then plot the final signal!
-        </div>
+        <div class="main-grid">
+            <div class="left-panel">
+                <div class="info">
+                    <strong>Instructions:</strong> Click signal buttons to build composite functions, then apply operations.
+                </div>
 
-        <h3 style="color: #667eea; margin-bottom: 15px;">Select Signal Types:</h3>
-        <div class="signal-buttons">
-            <button class="signal-btn" onclick="openModal('impulse')">δ[n] Unit Impulse</button>
-            <button class="signal-btn" onclick="openModal('step')">u[n] Unit Step</button>
-            <button class="signal-btn" onclick="openModal('ramp')">r[n] Unit Ramp</button>
-            <button class="signal-btn" onclick="openModal('exp')">a^n Exponential</button>
-            <button class="signal-btn" onclick="openModal('sin')">sin(ωn) Sinusoid</button>
-            <button class="signal-btn" onclick="openModal('cos')">cos(ωn) Cosine</button>
-        </div>
+                <div class="function-display">
+                    <h3>Signal Types:</h3>
+                    <div class="signal-buttons">
+                        <button class="signal-btn" onclick="openModal('impulse')">δ[n] Impulse</button>
+                        <button class="signal-btn" onclick="openModal('step')">u[n] Step</button>
+                        <button class="signal-btn" onclick="openModal('ramp')">r[n] Ramp</button>
+                        <button class="signal-btn" onclick="openModal('exp')">a^n Exp</button>
+                        <button class="signal-btn" onclick="openModal('sin')">sin(ωn)</button>
+                        <button class="signal-btn" onclick="openModal('cos')">cos(ωn)</button>
+                    </div>
+                </div>
 
-        <div class="function-display">
-            <h3>Composite Function:</h3>
-            <div class="function-text" id="compositeFunction">No signals added yet</div>
-            <div class="action-buttons">
-                <button class="btn-primary" onclick="plotComposite()">📈 Plot Signal</button>
-                <button class="btn-secondary" onclick="clearComposite()">🗑️ Clear All</button>
+                <div class="function-display">
+                    <h3>Composite Function:</h3>
+                    <div class="function-text" id="compositeFunction">No signals added yet</div>
+                    <div class="action-buttons">
+                        <button class="btn-primary" onclick="plotComposite()">📈 Plot Signal</button>
+                        <button class="btn-secondary" onclick="clearComposite()">🗑️ Clear</button>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label>Signal Range:</label>
+                    <div class="param-grid">
+                        <input type="number" id="globalRangeStart" value="-5" placeholder="Start n">
+                        <input type="number" id="globalRangeEnd" value="10" placeholder="End n">
+                    </div>
+                </div>
+
+                <div class="operation-section">
+                    <h3>Apply Operation:</h3>
+                    
+                    <div class="input-group">
+                        <label>Operation Type:</label>
+                        <select id="operationType">
+                            <option value="shift">Time Shift: x[n - k]</option>
+                            <option value="scale">Time Scale: x[an]</option>
+                            <option value="fold">Time Folding: x[-n]</option>
+                            <option value="add">Addition: x[n] + c</option>
+                            <option value="multiply">Multiplication: x[n] × c</option>
+                            <option value="reverse">Reverse Sequence</option>
+                        </select>
+                    </div>
+
+                    <div class="input-group">
+                        <label>Parameter Value:</label>
+                        <input type="number" id="paramValue" placeholder="e.g., 2">
+                    </div>
+
+                    <button class="btn-primary" onclick="applyOperation()">⚡ Apply Operation</button>
+                </div>
             </div>
-        </div>
 
-        <div class="input-group">
-            <label>Signal Range:</label>
-            <div class="param-grid">
-                <input type="number" id="globalRangeStart" value="-5" placeholder="Start n">
-                <input type="number" id="globalRangeEnd" value="10" placeholder="End n">
-            </div>
-        </div>
+            <div class="right-panel">
+                <div class="chart-wrapper">
+                    <div class="chart-title">Original Signal: x[n]</div>
+                    <div class="chart-container">
+                        <canvas id="originalChart"></canvas>
+                    </div>
+                </div>
 
-        <div class="operation-section">
-            <h3 style="margin-bottom: 15px; color: #856404;">Apply Operation to Signal:</h3>
-            
-            <div class="input-group">
-                <label>Operation Type:</label>
-                <select id="operationType">
-                    <option value="shift">Time Shift: x[n - k]</option>
-                    <option value="scale">Time Scale: x[an]</option>
-                    <option value="fold">Time Folding: x[-n]</option>
-                    <option value="add">Addition: x[n] + constant</option>
-                    <option value="multiply">Multiplication: x[n] × constant</option>
-                    <option value="reverse">Reverse Sequence</option>
-                </select>
-            </div>
+                <div class="chart-wrapper">
+                    <div class="chart-title">Output Signal: y[n]</div>
+                    <div class="chart-container">
+                        <canvas id="outputChart"></canvas>
+                    </div>
+                </div>
 
-            <div class="input-group">
-                <label>Parameter Value:</label>
-                <input type="number" id="paramValue" placeholder="e.g., 2 for shift by 2">
-            </div>
-
-            <button class="btn-primary" onclick="applyOperation()">⚡ Apply Operation</button>
-        </div>
-
-        <div class="charts-container">
-            <div class="chart-wrapper">
-                <div class="chart-title">Original Signal: x[n]</div>
-                <canvas id="originalChart"></canvas>
-            </div>
-            <div class="chart-wrapper">
-                <div class="chart-title">Output Signal: y[n]</div>
-                <canvas id="outputChart"></canvas>
+                <button class="btn-transfer" onclick="transferOutputToOriginal()">
+                    🔄 Use Output as Original Signal
+                </button>
             </div>
         </div>
     </div>
 
-    <!-- Modal -->
     <div id="signalModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -92,6 +106,8 @@
                 <button class="btn-secondary" onclick="closeModal()">Cancel</button>
             </div>
         </div>
+    </div>
+
     <script src="script.js"></script>
 </body>
 </html>
