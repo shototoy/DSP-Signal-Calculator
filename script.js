@@ -646,24 +646,46 @@ function createChart(canvasId, indices, data, title, type, forceXMin = null, for
         y: data[i]
     }));
 
+    const datasets = isDiscreteView ? [
+        {
+            type: 'bar',
+            data: chartData,
+            backgroundColor: type === 'original' ? 'rgba(102, 126, 234, 0.7)' : 'rgba(240, 147, 251, 0.7)',
+            borderWidth: 0,
+            barPercentage: 0.05,
+            categoryPercentage: 1,
+            order: 2
+        },
+        {
+            type: 'scatter',
+            data: chartData,
+            pointRadius: 5,
+            pointBackgroundColor: type === 'original' ? '#667eea' : '#f093fb',
+            pointBorderColor: '#fff',
+            pointBorderWidth: 2,
+            order: 1
+        }
+    ] : [
+        {
+            type: 'line',
+            data: chartData,
+            showLine: true,
+            borderColor: type === 'original' ? '#667eea' : '#f093fb',
+            backgroundColor: type === 'original' ? 'rgba(102, 126, 234, 0.1)' : 'rgba(240, 147, 251, 0.1)',
+            borderWidth: 2,
+            pointRadius: 5,
+            pointBackgroundColor: type === 'original' ? '#667eea' : '#f093fb',
+            pointBorderColor: '#fff',
+            pointBorderWidth: 2,
+            tension: 0
+        }
+    ];
+
     const chart = new Chart(ctx, {
         type: 'line',
         data: {
             labels: indices,
-            datasets: [{
-                type: 'line',
-                label: title,
-                data: chartData,
-                showLine: true,
-                borderColor: type === 'original' ? '#667eea' : '#f093fb',
-                backgroundColor: type === 'original' ? 'rgba(102, 126, 234, 0.1)' : 'rgba(240, 147, 251, 0.1)',
-                borderWidth: 2,
-                pointRadius: 5,
-                pointBackgroundColor: type === 'original' ? '#667eea' : '#f093fb',
-                pointBorderColor: '#fff',
-                pointBorderWidth: 2,
-                tension: 0
-            }]
+            datasets: datasets
         },
         options: {
             responsive: true,

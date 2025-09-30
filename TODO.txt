@@ -1,3 +1,5 @@
 IF output signal not used as Original signal and you performed another operation then that should still be applied to original signal and not the previously operation notation. Thats correct. BUT
 Multiple operations on the same signal shouldnt be a "NEW" Step, rather modification of previous steps
 
+Put Chart Toggle inside main panel grid so not to waste extra height space
+Problem in plotting signal that adds function AFTER performing operations. But if added 2 functions on the beginning and plot, it works
