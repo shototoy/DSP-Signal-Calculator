@@ -10,7 +10,9 @@ let lastOperationDescription = '';
 let globalYMin = null;
 let globalYMax = null;
 let operationHistory = [];
-let lastTransferredSignal = '';
+let lastOperationKey = '';
+let globalXMin = null;
+let globalXMax = null;
 
 function openModal(signalType) {
     currentSignalType = signalType;
@@ -243,7 +245,7 @@ function clearComposite() {
 
 function clearHistory() {
     operationHistory = [];
-    lastTransferredSignal = '';
+    lastOperationKey = '';
     updateHistoryDisplay();
 }
 
@@ -310,8 +312,10 @@ function plotComposite() {
     
     globalYMin = Math.min(...originalData);
     globalYMax = Math.max(...originalData);
+    globalXMin = Math.min(...originalIndices);
+    globalXMax = Math.max(...originalIndices);
     
-    createChart('originalChart', originalIndices, originalData, 'Original Signal: x[n]', 'original');
+    createChart('originalChart', originalIndices, originalData, 'Original Signal: x[n]', 'original', globalXMin, globalXMax);
 }
 
 function applyOperation() {
@@ -372,8 +376,35 @@ function applyOperation() {
     globalYMax = Math.max(...allData);
     
     const allIndices = [...originalIndices, ...outputIndices];
-    const globalXMin = Math.min(...allIndices);
-    const globalXMax = Math.max(...allIndices);
+    const newGlobalXMin = Math.min(...allIndices);
+    const newGlobalXMax = Math.max(...allIndices);
+    
+    globalXMin = newGlobalXMin;
+    globalXMax = newGlobalXMax;
+    
+    let currentSignalNotation = '';
+    if (compositeSignals.length > 0) {
+        compositeSignals.forEach((signal, index) => {
+            if (index === 0) {
+                currentSignalNotation += signal.notation;
+            } else {
+                currentSignalNotation += ` ${signal.operation} ${signal.notation}`;
+            }
+        });
+    } else {
+        currentSignalNotation = 'Unknown signal';
+    }
+    
+    const operationKey = `${currentSignalNotation}|${opType}|${param}`;
+    
+    if (lastOperationKey !== operationKey) {
+        operationHistory.push({
+            signal: currentSignalNotation,
+            operation: operationDesc
+        });
+        lastOperationKey = operationKey;
+        updateHistoryDisplay();
+    }
 
     createChart('originalChart', originalIndices, originalData, 'Original Signal: x[n]', 'original', globalXMin, globalXMax);
     createChart('outputChart', outputIndices, outputData, 'Output Signal: y[n]', 'output', globalXMin, globalXMax);
@@ -430,15 +461,6 @@ function transferOutputToOriginal() {
             break;
     }
     
-    if (lastTransferredSignal !== newNotation) {
-        operationHistory.push({
-            signal: currentSignalNotation,
-            operation: lastOperationDescription
-        });
-        lastTransferredSignal = newNotation;
-        updateHistoryDisplay();
-    }
-    
     originalData = [...outputData];
     originalIndices = [...outputIndices];
     
@@ -454,11 +476,13 @@ function transferOutputToOriginal() {
     
     globalYMin = Math.min(...originalData);
     globalYMax = Math.max(...originalData);
+    globalXMin = Math.min(...originalIndices);
+    globalXMax = Math.max(...originalIndices);
     
-    createChart('originalChart', originalIndices, originalData, 'Original Signal: x[n]', 'original');
+    createChart('originalChart', originalIndices, originalData, 'Original Signal: x[n]', 'original', globalXMin, globalXMax);
 }
 
-function createChart(canvasId, indices, data, title, type, globalXMin = null, globalXMax = null) {
+function createChart(canvasId, indices, data, title, type, forceXMin = null, forceXMax = null) {
     const ctx = document.getElementById(canvasId).getContext('2d');
     
     if ((type === 'original' && originalChart) || (type === 'output' && outputChart)) {
@@ -470,15 +494,16 @@ function createChart(canvasId, indices, data, title, type, globalXMin = null, gl
     }
 
     let minIndex, maxIndex;
-    if (globalXMin !== null && globalXMax !== null) {
-        minIndex = globalXMin;
-        maxIndex = globalXMax;
+    if (forceXMin !== null && forceXMax !== null) {
+        minIndex = forceXMin;
+        maxIndex = forceXMax;
     } else {
         minIndex = Math.min(...indices);
         maxIndex = Math.max(...indices);
     }
     
-    const xPadding = (maxIndex - minIndex) * 0.05 || 1;
+    const xRange = maxIndex - minIndex;
+    const xPadding = xRange * 0.05 || 1;
     
     let yMin, yMax;
     if (globalYMin !== null && globalYMax !== null) {
@@ -489,7 +514,11 @@ function createChart(canvasId, indices, data, title, type, globalXMin = null, gl
         yMax = Math.max(...data);
     }
     
-    const yPadding = (yMax - yMin) * 0.15 || 1;
+    const yRange = yMax - yMin;
+    const yPadding = yRange * 0.15 || 1;
+    
+    const actualXMin = minIndex - xPadding;
+    const actualXMax = maxIndex + xPadding;
 
     const chart = new Chart(ctx, {
         type: 'line',
@@ -518,8 +547,9 @@ function createChart(canvasId, indices, data, title, type, globalXMin = null, gl
             },
             scales: {
                 x: {
-                    min: minIndex - xPadding,
-                    max: maxIndex + xPadding,
+                    type: 'linear',
+                    min: actualXMin,
+                    max: actualXMax,
                     title: {
                         display: true,
                         text: 'n (sample index)',
@@ -530,13 +560,13 @@ function createChart(canvasId, indices, data, title, type, globalXMin = null, gl
                     },
                     grid: {
                         color: function(context) {
-                            if (context.tick.value === 0) {
+                            if (Math.abs(context.tick.value) < 0.001) {
                                 return 'rgba(0, 0, 0, 0.8)';
                             }
                             return 'rgba(0,0,0,0.08)';
                         },
                         lineWidth: function(context) {
-                            if (context.tick.value === 0) {
+                            if (Math.abs(context.tick.value) < 0.001) {
                                 return 3;
                             }
                             return 1;
@@ -563,13 +593,13 @@ function createChart(canvasId, indices, data, title, type, globalXMin = null, gl
                     },
                     grid: {
                         color: function(context) {
-                            if (context.tick.value === 0) {
+                            if (Math.abs(context.tick.value) < 0.001) {
                                 return 'rgba(0, 0, 0, 0.8)';
                             }
                             return 'rgba(0,0,0,0.08)';
                         },
                         lineWidth: function(context) {
-                            if (context.tick.value === 0) {
+                            if (Math.abs(context.tick.value) < 0.001) {
                                 return 3;
                             }
                             return 1;
