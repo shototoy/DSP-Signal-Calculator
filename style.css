@@ -28,8 +28,8 @@ body {
 h1 {
     text-align: center;
     color: #667eea;
-    margin-bottom: 20px;
-    font-size: 1.8em;
+    margin-bottom: 10px;
+    font-size: 1.6em;
     flex-shrink: 0;
 }
 
@@ -53,13 +53,13 @@ h1 {
 
 .view-toolbar {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    padding: 15px;
+    padding: 0.5rem;
     border-radius: 10px;
-    margin-bottom: 15px;
+    margin-bottom: 0.5rem;
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 15px;
+    gap: 2rem;
     flex-shrink: 0;
     box-shadow: 0 4px 10px rgba(0,0,0,0.15);
 }
@@ -75,6 +75,7 @@ h1 {
     display: inline-block;
     width: 180px;
     height: 40px;
+    margin-bottom: 0;
 }
 
 .toggle-switch input {
@@ -106,6 +107,7 @@ h1 {
     transition: 0.4s;
     z-index: 2;
     pointer-events: none;
+    margin-bottom: 0;
 }
 
 .slider-label.active {
@@ -139,7 +141,7 @@ input:checked + .slider:before {
 
 .main-grid {
     display: grid;
-    grid-template-columns: 380px 1fr;
+    grid-template-columns: 380px 1fr 300px;
     gap: 20px;
     flex: 1;
     min-height: 0;
@@ -174,6 +176,63 @@ input:checked + .slider:before {
     gap: 15px;
     min-height: 0;
     overflow: hidden;
+}
+
+.right-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: 10px;
+}
+
+.right-panel::-webkit-scrollbar {
+    width: 8px;
+}
+
+.right-panel::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.right-panel::-webkit-scrollbar-thumb {
+    background: #28a745;
+    border-radius: 10px;
+}
+
+.history-panel {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 10px;
+    border-left: 4px solid #28a745;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+}
+
+.history-panel h3 {
+    color: #28a745;
+    margin-bottom: 10px;
+    font-size: 1em;
+    flex-shrink: 0;
+}
+
+.history-content {
+    background: white;
+    padding: 12px;
+    border-radius: 5px;
+    flex: 1;
+    overflow-y: auto;
+}
+
+.history-panel-bottom {
+    display: none;
+    flex: 0;
+    min-height: 200px;
+    max-height: 300px;
 }
 
 .info {
@@ -342,23 +401,6 @@ input:checked + .slider:before {
     transform: translateY(-2px);
 }
 
-.history-panel {
-    background: #f8f9fa;
-    padding: 15px;
-    border-radius: 10px;
-    border-left: 4px solid #28a745;
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    min-height: 0;
-}
-
-.history-panel-bottom {
-    flex: 0;
-    min-height: 200px;
-    max-height: 300px;
-}
-
 .history-panel h3 {
     color: #28a745;
     margin-bottom: 10px;
@@ -475,6 +517,7 @@ input:checked + .slider:before {
     transition: transform 0.2s;
     width: 100%;
     flex-shrink: 0;
+    margin-top: 0.25rem;
 }
 
 .btn-clear-history {
@@ -651,6 +694,12 @@ input:focus, select:focus {
 }
 
 /* Responsive Design */
+@media (max-width: 1400px) {
+    .main-grid {
+        grid-template-columns: 350px 1fr 280px;
+    }
+}
+
 @media (max-width: 1200px) {
     .sidebar-toggle {
         display: block;
@@ -679,6 +728,17 @@ input:focus, select:focus {
 
     .middle-panel {
         grid-column: 1;
+    }
+
+    .right-panel {
+        display: none;
+    }
+
+    .history-panel-bottom {
+        display: flex;
+        flex: 0;
+        min-height: 250px;
+        max-height: 400px;
     }
 
     .signal-buttons {

@@ -45,6 +45,9 @@
                         <button class="btn-store" onclick="storeCurrentSignal()">💾 Store</button>
                         <button class="btn-clear-storage" onclick="clearStoredSignals()">🗑️ Memory Clear</button>
                     </div>
+                    <button class="btn-transfer" onclick="transferOutputToOriginal()">
+                        🔄 Use Output as Original Signal
+                    </button>
                 </div>
 
 
@@ -105,12 +108,18 @@
                         <canvas id="outputChart"></canvas>
                     </div>
                 </div>
-
-                <button class="btn-transfer" onclick="transferOutputToOriginal()">
-                    🔄 Use Output as Original Signal
-                </button>
                 
                 <div class="history-panel history-panel-bottom">
+                    <h3>📜 Operation History</h3>
+                    <div class="history-content" id="historyDisplay">
+                        <div class="history-empty">No operations applied yet</div>
+                    </div>
+                    <button class="btn-clear-history" onclick="clearHistory()">🗑️ Clear History</button>
+                </div>
+            </div>
+
+            <div class="right-panel">
+                <div class="history-panel">
                     <h3>📜 Operation History</h3>
                     <div class="history-content" id="historyDisplay">
                         <div class="history-empty">No operations applied yet</div>
