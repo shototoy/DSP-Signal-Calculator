@@ -315,6 +315,22 @@ function plotComposite() {
     globalXMin = Math.min(...originalIndices);
     globalXMax = Math.max(...originalIndices);
     
+    let currentSignalNotation = '';
+    compositeSignals.forEach((signal, index) => {
+        if (index === 0) {
+            currentSignalNotation += signal.notation;
+        } else {
+            currentSignalNotation += ` ${signal.operation} ${signal.notation}`;
+        }
+    });
+    
+    operationHistory.push({
+        signal: currentSignalNotation,
+        operation: 'Plotted Original Signal'
+    });
+    lastOperationKey = `plot|${currentSignalNotation}`;
+    updateHistoryDisplay();
+    
     createChart('originalChart', originalIndices, originalData, 'Original Signal: x[n]', 'original', globalXMin, globalXMax);
 }
 
@@ -331,12 +347,33 @@ function applyOperation() {
     outputIndices = [];
 
     let operationDesc = '';
+    let currentSignalNotation = '';
+    if (compositeSignals.length > 0) {
+        compositeSignals.forEach((signal, index) => {
+            if (index === 0) {
+                currentSignalNotation += signal.notation;
+            } else {
+                currentSignalNotation += ` ${signal.operation} ${signal.notation}`;
+            }
+        });
+    } else {
+        currentSignalNotation = 'Unknown signal';
+    }
+    
+    let newNotation = '';
     
     switch(opType) {
         case 'shift':
             outputIndices = originalIndices.map(n => n + param);
             outputData = [...originalData];
             operationDesc = `Applied Time Shifting: k = ${param}`;
+            if (param > 0) {
+                newNotation = currentSignalNotation.replace(/\[n([^\]]*)\]/g, `[n-${param}$1]`).replace(/--/g, '+').replace(/\+-/g, '-');
+            } else if (param < 0) {
+                newNotation = currentSignalNotation.replace(/\[n([^\]]*)\]/g, `[n+${Math.abs(param)}$1]`);
+            } else {
+                newNotation = currentSignalNotation;
+            }
             break;
         case 'scale':
             if (param === 0) {
@@ -346,26 +383,31 @@ function applyOperation() {
             outputIndices = originalIndices.map(n => n / param);
             outputData = [...originalData];
             operationDesc = `Applied Time Scaling: a = ${param}`;
+            newNotation = currentSignalNotation.replace(/\[n([^\]]*)\]/g, `[${param}n$1]`);
             break;
         case 'fold':
             outputIndices = originalIndices.map(n => -n).reverse();
             outputData = [...originalData].reverse();
             operationDesc = `Applied Time Folding: n → -n`;
+            newNotation = currentSignalNotation.replace(/\[n([^\]]*)\]/g, '[-n$1]').replace(/--/g, '+');
             break;
         case 'add':
             outputIndices = [...originalIndices];
             outputData = originalData.map(x => x + param);
             operationDesc = `Applied Addition: + ${param}`;
+            newNotation = `(${currentSignalNotation}) + ${param}`;
             break;
         case 'multiply':
             outputIndices = [...originalIndices];
             outputData = originalData.map(x => x * param);
             operationDesc = `Applied Multiplication: × ${param}`;
+            newNotation = `${param} × (${currentSignalNotation})`;
             break;
         case 'reverse':
             outputIndices = [...originalIndices].reverse();
             outputData = [...originalData].reverse();
             operationDesc = `Applied Reverse Sequence`;
+            newNotation = `reverse(${currentSignalNotation})`;
             break;
     }
     
@@ -382,24 +424,11 @@ function applyOperation() {
     globalXMin = newGlobalXMin;
     globalXMax = newGlobalXMax;
     
-    let currentSignalNotation = '';
-    if (compositeSignals.length > 0) {
-        compositeSignals.forEach((signal, index) => {
-            if (index === 0) {
-                currentSignalNotation += signal.notation;
-            } else {
-                currentSignalNotation += ` ${signal.operation} ${signal.notation}`;
-            }
-        });
-    } else {
-        currentSignalNotation = 'Unknown signal';
-    }
-    
     const operationKey = `${currentSignalNotation}|${opType}|${param}`;
     
     if (lastOperationKey !== operationKey) {
         operationHistory.push({
-            signal: currentSignalNotation,
+            signal: newNotation,
             operation: operationDesc
         });
         lastOperationKey = operationKey;
@@ -478,6 +507,14 @@ function transferOutputToOriginal() {
     globalYMax = Math.max(...originalData);
     globalXMin = Math.min(...originalIndices);
     globalXMax = Math.max(...originalIndices);
+    
+    outputData = [];
+    outputIndices = [];
+    
+    if (outputChart) {
+        outputChart.destroy();
+        outputChart = null;
+    }
     
     createChart('originalChart', originalIndices, originalData, 'Original Signal: x[n]', 'original', globalXMin, globalXMax);
 }
