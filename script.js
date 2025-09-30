@@ -943,5 +943,13 @@ function createChart(canvasId, indices, data, title, type, forceXMin = null, for
 
 function toggleSidebar() {
     const sidebar = document.getElementById('sidebarPanel');
+    const toggleButton = document.querySelector('.sidebar-toggle');
+    
     sidebar.classList.toggle('show');
+    
+    if (sidebar.classList.contains('show')) {
+        toggleButton.style.opacity = '1';
+    } else {
+        toggleButton.style.opacity = '0.3';
+    }
 }
