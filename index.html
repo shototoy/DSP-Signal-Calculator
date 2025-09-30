@@ -70,7 +70,7 @@
                 </div>
             </div>
 
-            <div class="right-panel">
+            <div class="middle-panel">
                 <div class="chart-wrapper">
                     <div class="chart-title">Original Signal: x[n]</div>
                     <div class="chart-container">
@@ -88,6 +88,16 @@
                 <button class="btn-transfer" onclick="transferOutputToOriginal()">
                     🔄 Use Output as Original Signal
                 </button>
+            </div>
+
+            <div class="right-panel">
+                <div class="history-panel">
+                    <h3>📜 Operation History</h3>
+                    <div class="history-content" id="historyDisplay">
+                        <div class="history-empty">No operations applied yet</div>
+                    </div>
+                    <button class="btn-clear-history" onclick="clearHistory()">🗑️ Clear History</button>
+                </div>
             </div>
         </div>
     </div>

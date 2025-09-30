@@ -9,6 +9,8 @@ let currentSignalType = '';
 let lastOperationDescription = '';
 let globalYMin = null;
 let globalYMax = null;
+let operationHistory = [];
+let lastTransferredSignal = '';
 
 function openModal(signalType) {
     currentSignalType = signalType;
@@ -183,6 +185,7 @@ function addToFunction() {
 
 function updateCompositeDisplay() {
     const display = document.getElementById('compositeFunction');
+    
     if (compositeSignals.length === 0) {
         display.textContent = 'No signals added yet';
         return;
@@ -200,9 +203,48 @@ function updateCompositeDisplay() {
     display.textContent = text;
 }
 
+function updateHistoryDisplay() {
+    const display = document.getElementById('historyDisplay');
+    display.innerHTML = '';
+    
+    if (operationHistory.length === 0) {
+        display.innerHTML = '<div class="history-empty">No operations applied yet</div>';
+        return;
+    }
+    
+    operationHistory.forEach((entry, index) => {
+        const historyBlock = document.createElement('div');
+        historyBlock.className = 'history-block';
+        
+        const stepLabel = document.createElement('div');
+        stepLabel.className = 'step-label';
+        stepLabel.textContent = `Step ${index + 1}:`;
+        
+        const signalText = document.createElement('div');
+        signalText.className = 'signal-text';
+        signalText.textContent = entry.signal;
+        
+        const operationText = document.createElement('div');
+        operationText.className = 'operation-text';
+        operationText.textContent = entry.operation;
+        
+        historyBlock.appendChild(stepLabel);
+        historyBlock.appendChild(signalText);
+        historyBlock.appendChild(operationText);
+        
+        display.appendChild(historyBlock);
+    });
+}
+
 function clearComposite() {
     compositeSignals = [];
     updateCompositeDisplay();
+}
+
+function clearHistory() {
+    operationHistory = [];
+    lastTransferredSignal = '';
+    updateHistoryDisplay();
 }
 
 function evaluateSignal(n, signal) {
@@ -266,6 +308,9 @@ function plotComposite() {
         originalData.push(sum);
     }
     
+    globalYMin = Math.min(...originalData);
+    globalYMax = Math.max(...originalData);
+    
     createChart('originalChart', originalIndices, originalData, 'Original Signal: x[n]', 'original');
 }
 
@@ -325,9 +370,13 @@ function applyOperation() {
     const allData = [...originalData, ...outputData];
     globalYMin = Math.min(...allData);
     globalYMax = Math.max(...allData);
+    
+    const allIndices = [...originalIndices, ...outputIndices];
+    const globalXMin = Math.min(...allIndices);
+    const globalXMax = Math.max(...allIndices);
 
-    createChart('originalChart', originalIndices, originalData, 'Original Signal: x[n]', 'original');
-    createChart('outputChart', outputIndices, outputData, 'Output Signal: y[n]', 'output');
+    createChart('originalChart', originalIndices, originalData, 'Original Signal: x[n]', 'original', globalXMin, globalXMax);
+    createChart('outputChart', outputIndices, outputData, 'Output Signal: y[n]', 'output', globalXMin, globalXMax);
 }
 
 function transferOutputToOriginal() {
@@ -336,51 +385,72 @@ function transferOutputToOriginal() {
         return;
     }
     
-    originalData = [...outputData];
-    originalIndices = [...outputIndices];
-    
-    const currentComposite = document.getElementById('compositeFunction').textContent;
+    let currentSignalNotation = '';
+    if (compositeSignals.length > 0) {
+        compositeSignals.forEach((signal, index) => {
+            if (index === 0) {
+                currentSignalNotation += signal.notation;
+            } else {
+                currentSignalNotation += ` ${signal.operation} ${signal.notation}`;
+            }
+        });
+    } else {
+        currentSignalNotation = 'Unknown signal';
+    }
     
     const opType = document.getElementById('operationType').value;
     const param = parseFloat(document.getElementById('paramValue').value) || 0;
     
     let newNotation = '';
     
-    if (currentComposite === 'No signals added yet') {
-        newNotation = 'Unknown signal';
-    } else {
-        const baseSignal = currentComposite;
-        
-        switch(opType) {
-            case 'shift':
-                if (param > 0) {
-                    newNotation = baseSignal.replace(/\[n([^\]]*)\]/g, `[n-${param}$1]`).replace(/--/g, '+');
-                } else if (param < 0) {
-                    newNotation = baseSignal.replace(/\[n([^\]]*)\]/g, `[n+${Math.abs(param)}$1]`);
-                } else {
-                    newNotation = baseSignal;
-                }
-                break;
-            case 'fold':
-                newNotation = baseSignal.replace(/\[n([^\]]*)\]/g, '[-n$1]');
-                break;
-            case 'scale':
-                newNotation = baseSignal.replace(/\[n([^\]]*)\]/g, `[${param}n$1]`);
-                break;
-            case 'add':
-                newNotation = `(${baseSignal}) + ${param}`;
-                break;
-            case 'multiply':
-                newNotation = `${param} × (${baseSignal})`;
-                break;
-            case 'reverse':
-                newNotation = `reverse(${baseSignal})`;
-                break;
-        }
+    switch(opType) {
+        case 'shift':
+            if (param > 0) {
+                newNotation = currentSignalNotation.replace(/\[n([^\]]*)\]/g, `[n-${param}$1]`).replace(/--/g, '+').replace(/\+-/g, '-');
+            } else if (param < 0) {
+                newNotation = currentSignalNotation.replace(/\[n([^\]]*)\]/g, `[n+${Math.abs(param)}$1]`);
+            } else {
+                newNotation = currentSignalNotation;
+            }
+            break;
+        case 'fold':
+            newNotation = currentSignalNotation.replace(/\[n([^\]]*)\]/g, '[-n$1]').replace(/--/g, '+');
+            break;
+        case 'scale':
+            newNotation = currentSignalNotation.replace(/\[n([^\]]*)\]/g, `[${param}n$1]`);
+            break;
+        case 'add':
+            newNotation = `(${currentSignalNotation}) + ${param}`;
+            break;
+        case 'multiply':
+            newNotation = `${param} × (${currentSignalNotation})`;
+            break;
+        case 'reverse':
+            newNotation = `reverse(${currentSignalNotation})`;
+            break;
     }
     
-    const displayText = `${lastOperationDescription}\nCurrent Signal: ${newNotation}`;
-    document.getElementById('compositeFunction').textContent = displayText;
+    if (lastTransferredSignal !== newNotation) {
+        operationHistory.push({
+            signal: currentSignalNotation,
+            operation: lastOperationDescription
+        });
+        lastTransferredSignal = newNotation;
+        updateHistoryDisplay();
+    }
+    
+    originalData = [...outputData];
+    originalIndices = [...outputIndices];
+    
+    compositeSignals = [{
+        type: 'custom',
+        operation: '+',
+        notation: newNotation,
+        amplitude: 1,
+        shift: 0
+    }];
+    
+    updateCompositeDisplay();
     
     globalYMin = Math.min(...originalData);
     globalYMax = Math.max(...originalData);
@@ -388,7 +458,7 @@ function transferOutputToOriginal() {
     createChart('originalChart', originalIndices, originalData, 'Original Signal: x[n]', 'original');
 }
 
-function createChart(canvasId, indices, data, title, type) {
+function createChart(canvasId, indices, data, title, type, globalXMin = null, globalXMax = null) {
     const ctx = document.getElementById(canvasId).getContext('2d');
     
     if ((type === 'original' && originalChart) || (type === 'output' && outputChart)) {
@@ -399,8 +469,15 @@ function createChart(canvasId, indices, data, title, type) {
         }
     }
 
-    const minIndex = Math.min(...indices);
-    const maxIndex = Math.max(...indices);
+    let minIndex, maxIndex;
+    if (globalXMin !== null && globalXMax !== null) {
+        minIndex = globalXMin;
+        maxIndex = globalXMax;
+    } else {
+        minIndex = Math.min(...indices);
+        maxIndex = Math.max(...indices);
+    }
+    
     const xPadding = (maxIndex - minIndex) * 0.05 || 1;
     
     let yMin, yMax;
@@ -454,7 +531,7 @@ function createChart(canvasId, indices, data, title, type) {
                     grid: {
                         color: function(context) {
                             if (context.tick.value === 0) {
-                                return 'rgba(0, 0, 0, 0.5)';
+                                return 'rgba(0, 0, 0, 0.8)';
                             }
                             return 'rgba(0,0,0,0.08)';
                         },
@@ -487,7 +564,7 @@ function createChart(canvasId, indices, data, title, type) {
                     grid: {
                         color: function(context) {
                             if (context.tick.value === 0) {
-                                return 'rgba(0, 0, 0, 0.5)';
+                                return 'rgba(0, 0, 0, 0.8)';
                             }
                             return 'rgba(0,0,0,0.08)';
                         },
