@@ -9,10 +9,12 @@
 </head>
 <body>
     <div class="container">
-        <h1>🔊 Discrete Signal Processing Operations</h1>
+        <h1>DSP Signal Calculator</h1>
+        
+        <button class="sidebar-toggle" onclick="toggleSidebar()">☰ Controls</button>
         
         <div class="main-grid">
-            <div class="left-panel">
+            <div class="left-panel" id="sidebarPanel">
                 <div class="info">
                     <strong>Instructions:</strong> Click signal buttons to build composite functions, then apply operations.
                 </div>
@@ -22,21 +24,29 @@
                     <div class="signal-buttons">
                         <button class="signal-btn" onclick="openModal('impulse')">δ[n] Impulse</button>
                         <button class="signal-btn" onclick="openModal('step')">u[n] Step</button>
-                        <button class="signal-btn" onclick="openModal('ramp')">r[n] Ramp</button>
-                        <button class="signal-btn" onclick="openModal('exp')">a^n Exp</button>
-                        <button class="signal-btn" onclick="openModal('sin')">sin(ωn)</button>
-                        <button class="signal-btn" onclick="openModal('cos')">cos(ωn)</button>
+                        <button class="signal-btn" onclick="openModal('ramp')">r[n] Ramp</button><!--
+                        <button class="signal-btn" onclick="openModal('exp')">a^n Exponential</button>
+                        <button class="signal-btn" onclick="openModal('sin')">sin Sinusoid</button>
+                        <button class="signal-btn" onclick="openModal('cos')">cos Cosine</button>-->
                     </div>
                 </div>
 
                 <div class="function-display">
                     <h3>Composite Function:</h3>
                     <div class="function-text" id="compositeFunction">No signals added yet</div>
+                        <div id="storageDisplay" class="storage-display">
+                        <div class="storage-empty">No signals stored</div>
+                    </div>
                     <div class="action-buttons">
-                        <button class="btn-primary" onclick="plotComposite()">📈 Plot Signal</button>
+                        <button class="btn-primary" onclick="plotComposite()">📈 Plot</button>
                         <button class="btn-secondary" onclick="clearComposite()">🗑️ Clear</button>
                     </div>
+                    <div class="storage-buttons">
+                        <button class="btn-store" onclick="storeCurrentSignal()">💾 Store</button>
+                        <button class="btn-clear-storage" onclick="clearStoredSignals()">🗑️ Memory Clear</button>
+                    </div>
                 </div>
+
 
                 <div class="input-group">
                     <label>Signal Range:</label>
@@ -71,6 +81,17 @@
             </div>
 
             <div class="middle-panel">
+                <div class="view-toolbar">
+                    <label>Display Mode:</label>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="viewToggle" onchange="toggleView()">
+                        <span class="slider">
+                            <span class="slider-label left active">Continuous</span>
+                            <span class="slider-label right">Discrete</span>
+                        </span>
+                    </label>
+                </div>
+                
                 <div class="chart-wrapper">
                     <div class="chart-title">Original Signal: x[n]</div>
                     <div class="chart-container">
@@ -88,10 +109,8 @@
                 <button class="btn-transfer" onclick="transferOutputToOriginal()">
                     🔄 Use Output as Original Signal
                 </button>
-            </div>
-
-            <div class="right-panel">
-                <div class="history-panel">
+                
+                <div class="history-panel history-panel-bottom">
                     <h3>📜 Operation History</h3>
                     <div class="history-content" id="historyDisplay">
                         <div class="history-empty">No operations applied yet</div>

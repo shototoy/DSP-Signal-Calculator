@@ -13,6 +13,82 @@ let operationHistory = [];
 let lastOperationKey = '';
 let globalXMin = null;
 let globalXMax = null;
+let isDiscreteView = false;
+let storedSignals = [];
+
+function toggleView() {
+    const viewToggle = document.getElementById('viewToggle');
+    if (!viewToggle) return;
+    
+    isDiscreteView = viewToggle.checked;
+    
+    const leftLabel = document.querySelector('.slider-label.left');
+    const rightLabel = document.querySelector('.slider-label.right');
+    
+    if (leftLabel && rightLabel) {
+        if (isDiscreteView) {
+            leftLabel.classList.remove('active');
+            rightLabel.classList.add('active');
+        } else {
+            leftLabel.classList.add('active');
+            rightLabel.classList.remove('active');
+        }
+    }
+    
+    if (originalChart && originalData.length > 0) {
+        updateChartStyle(originalChart, 'original');
+    }
+    
+    if (outputChart && outputData.length > 0) {
+        updateChartStyle(outputChart, 'output');
+    }
+}
+
+function updateChartStyle(chart, type) {
+    const dataset = chart.data.datasets[0];
+    const dataPoints = dataset.data;
+    
+    if (isDiscreteView) {
+        chart.data.datasets = [
+            {
+                type: 'bar',
+                data: dataPoints,
+                backgroundColor: type === 'original' ? 'rgba(102, 126, 234, 0.7)' : 'rgba(240, 147, 251, 0.7)',
+                borderWidth: 0,
+                barPercentage: 0.05,
+                categoryPercentage: 1,
+                order: 2
+            },
+            {
+                type: 'scatter',
+                data: dataPoints,
+                pointRadius: 5,
+                pointBackgroundColor: type === 'original' ? '#667eea' : '#f093fb',
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2,
+                order: 1
+            }
+        ];
+    } else {
+        chart.data.datasets = [
+            {
+                type: 'line',
+                data: dataPoints,
+                showLine: true,
+                borderColor: type === 'original' ? '#667eea' : '#f093fb',
+                backgroundColor: type === 'original' ? 'rgba(102, 126, 234, 0.1)' : 'rgba(240, 147, 251, 0.1)',
+                borderWidth: 2,
+                pointRadius: 5,
+                pointBackgroundColor: type === 'original' ? '#667eea' : '#f093fb',
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2,
+                tension: 0
+            }
+        ];
+    }
+    
+    chart.update();
+}
 
 function openModal(signalType) {
     currentSignalType = signalType;
@@ -58,10 +134,11 @@ function openModal(signalType) {
 function generateBasicModalBody() {
     return `
         <div class="input-group">
-            <label>Operation (Add/Subtract):</label>
+            <label>Operation Type:</label>
             <select id="modalOperation">
                 <option value="+">+ Add</option>
                 <option value="-">- Subtract</option>
+                <option value="*">× Modulate</option>
             </select>
         </div>
         <div class="input-group">
@@ -79,10 +156,11 @@ function generateBasicModalBody() {
 function generateExpModalBody() {
     return `
         <div class="input-group">
-            <label>Operation (Add/Subtract):</label>
+            <label>Operation Type:</label>
             <select id="modalOperation">
                 <option value="+">+ Add</option>
                 <option value="-">- Subtract</option>
+                <option value="*">× Modulate</option>
             </select>
         </div>
         <div class="input-group">
@@ -103,10 +181,11 @@ function generateExpModalBody() {
 function generateSinusoidModalBody() {
     return `
         <div class="input-group">
-            <label>Operation (Add/Subtract):</label>
+            <label>Operation Type:</label>
             <select id="modalOperation">
                 <option value="+">+ Add</option>
                 <option value="-">- Subtract</option>
+                <option value="*">× Modulate</option>
             </select>
         </div>
         <div class="param-grid">
@@ -135,13 +214,26 @@ function closeModal() {
 }
 
 function addToFunction() {
-    const operation = document.getElementById('modalOperation').value;
-    const shift = parseInt(document.getElementById('modalShift').value) || 0;
-    const amplitude = parseFloat(document.getElementById('modalAmplitude')?.value) || 1;
+    const operationSelect = document.getElementById('modalOperation');
+    if (!operationSelect) {
+        console.error('Modal operation select not found!');
+        closeModal();
+        return;
+    }
     
+    // Force read the current selected value
+    const operation = operationSelect.options[operationSelect.selectedIndex].value;
+    
+    const shiftInput = document.getElementById('modalShift');
+    const shift = shiftInput ? parseInt(shiftInput.value) || 0 : 0;
+    
+    const amplitudeEl = document.getElementById('modalAmplitude');
+    const amplitude = amplitudeEl ? parseFloat(amplitudeEl.value) || 1 : 1;
+    
+    // Create signal object with explicit operation assignment
     let signalObj = {
         type: currentSignalType,
-        operation: operation,
+        operation: String(operation), // Force string conversion
         shift: shift,
         amplitude: amplitude
     };
@@ -161,15 +253,19 @@ function addToFunction() {
             notation = `${ampStr}r[${shiftStr}]`;
             break;
         case 'exp':
-            const base = parseFloat(document.getElementById('modalExpBase').value) || 0.8;
+            const expBaseEl = document.getElementById('modalExpBase');
+            const base = expBaseEl ? parseFloat(expBaseEl.value) || 0.8 : 0.8;
             signalObj.base = base;
             notation = `${ampStr}(${base})^${shiftStr}`;
             break;
         case 'sin':
         case 'cos':
-            const amp = parseFloat(document.getElementById('modalSinAmp').value) || 1;
-            const freq = parseFloat(document.getElementById('modalSinFreq').value) || 0.5;
-            const phase = parseFloat(document.getElementById('modalSinPhase').value) || 0;
+            const sinAmpEl = document.getElementById('modalSinAmp');
+            const sinFreqEl = document.getElementById('modalSinFreq');
+            const sinPhaseEl = document.getElementById('modalSinPhase');
+            const amp = sinAmpEl ? parseFloat(sinAmpEl.value) || 1 : 1;
+            const freq = sinFreqEl ? parseFloat(sinFreqEl.value) || 0.5 : 0.5;
+            const phase = sinPhaseEl ? parseFloat(sinPhaseEl.value) || 0 : 0;
             signalObj.sinAmp = amp;
             signalObj.sinFreq = freq;
             signalObj.sinPhase = phase;
@@ -180,11 +276,16 @@ function addToFunction() {
     }
     
     signalObj.notation = notation;
-    compositeSignals.push(signalObj);
+    
+    // Deep copy to ensure no reference issues
+    const signalCopy = JSON.parse(JSON.stringify(signalObj));
+    
+    console.log('Adding signal with operation:', signalCopy.operation);
+    
+    compositeSignals.push(signalCopy);
     updateCompositeDisplay();
     closeModal();
 }
-
 function updateCompositeDisplay() {
     const display = document.getElementById('compositeFunction');
     
@@ -198,7 +299,11 @@ function updateCompositeDisplay() {
         if (index === 0) {
             text += signal.notation;
         } else {
-            text += ` ${signal.operation} ${signal.notation}`;
+            if (signal.operation === '*') {
+                text += ` × ${signal.notation}`;
+            } else {
+                text += ` ${signal.operation} ${signal.notation}`;
+            }
         }
     });
     
@@ -236,6 +341,117 @@ function updateHistoryDisplay() {
         
         display.appendChild(historyBlock);
     });
+}
+
+function updateStorageDisplay() {
+    const display = document.getElementById('storageDisplay');
+    display.innerHTML = '';
+    
+    if (storedSignals.length === 0) {
+        display.innerHTML = '<div class="storage-empty">No signals stored</div>';
+        return;
+    }
+    
+    storedSignals.forEach((stored, index) => {
+        const storageItem = document.createElement('div');
+        storageItem.className = 'storage-item';
+        storageItem.onclick = () => openRetrieveModal(index);
+        
+        const label = document.createElement('div');
+        label.className = 'storage-item-label';
+        label.textContent = `Stored Signal ${index + 1}:`;
+        
+        const notation = document.createElement('div');
+        notation.className = 'storage-item-notation';
+        notation.textContent = stored.notation;
+        
+        storageItem.appendChild(label);
+        storageItem.appendChild(notation);
+        display.appendChild(storageItem);
+    });
+}
+
+function storeCurrentSignal() {
+    if (compositeSignals.length === 0) {
+        alert('Please add at least one signal to store!');
+        return;
+    }
+    
+    let notation = '';
+    compositeSignals.forEach((signal, index) => {
+        if (index === 0) {
+            notation += signal.notation;
+        } else {
+            if (signal.operation === '*') {
+                notation += ` × ${signal.notation}`;
+            } else {
+                notation += ` ${signal.operation} ${signal.notation}`;
+            }
+        }
+    });
+    
+    storedSignals.push({
+        signals: JSON.parse(JSON.stringify(compositeSignals)),
+        notation: notation
+    });
+    
+    updateStorageDisplay();
+}
+
+function openRetrieveModal(index) {
+    const stored = storedSignals[index];
+    const modal = document.getElementById('signalModal');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalBody = document.getElementById('modalBody');
+    
+    modalTitle.textContent = 'Retrieve Stored Signal';
+    modalBody.innerHTML = `
+        <div style="background: #e7f3ff; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #007bff;">
+            <div style="font-size: 11px; font-weight: 700; color: #007bff; text-transform: uppercase; margin-bottom: 8px;">
+                Signal to Retrieve:
+            </div>
+            <div style="font-size: 14px; font-weight: 600; color: #495057; font-family: 'Courier New', monospace;">
+                ${stored.notation}
+            </div>
+        </div>
+        <div class="input-group">
+            <label>Operation Type:</label>
+            <select id="modalOperation">
+                <option value="+">+ Add</option>
+                <option value="-">- Subtract</option>
+                <option value="*">× Modulate</option>
+            </select>
+        </div>
+    `;
+    
+    const oldAddFunction = window.addToFunction;
+    window.addToFunction = () => {
+        const operation = document.getElementById('modalOperation').value;
+        
+        stored.signals.forEach(signal => {
+            const signalCopy = JSON.parse(JSON.stringify(signal));
+            signalCopy.operation = operation;
+            compositeSignals.push(signalCopy);
+        });
+        
+        updateCompositeDisplay();
+        closeModal();
+        window.addToFunction = oldAddFunction;
+    };
+    
+    modal.classList.add('show');
+}
+
+function clearStoredSignals() {
+    if (storedSignals.length === 0) {
+        alert('No stored signals to clear!');
+        return;
+    }
+    
+    if (confirm('Are you sure you want to clear all stored signals?')) {
+        storedSignals = [];
+        updateStorageDisplay();
+    }
 }
 
 function clearComposite() {
@@ -278,11 +494,6 @@ function evaluateSignal(n, signal) {
 }
 
 function plotComposite() {
-    if (compositeSignals.length === 0) {
-        alert('Please add at least one signal to the function!');
-        return;
-    }
-    
     const start = parseInt(document.getElementById('globalRangeStart').value);
     const end = parseInt(document.getElementById('globalRangeEnd').value);
     
@@ -290,24 +501,43 @@ function plotComposite() {
         alert('Invalid range!');
         return;
     }
+    const hasTransferred = compositeSignals.some(s => s.isTransferred);
+    const hasNewSignals = compositeSignals.some(s => !s.isTransferred);
     
     originalIndices = [];
     originalData = [];
     
     for (let n = start; n <= end; n++) {
         originalIndices.push(n);
-        let sum = 0;
-        
-        compositeSignals.forEach(signal => {
+        let result = 0;
+        if (hasTransferred && transferredData !== null) {
+            const transferredIndex = transferredIndices.indexOf(n);
+            if (transferredIndex !== -1) {
+                result = transferredData[transferredIndex];
+            }
+        }
+        let hasModulation = false;
+        let modulationProduct = 1;
+        compositeSignals.forEach((signal, index) => {
+            if (signal.isTransferred) return; 
+            
             const value = evaluateSignal(n, signal);
-            if (signal.operation === '-') {
-                sum -= value;
+            
+            if (signal.operation === '*') {
+                hasModulation = true;
+                modulationProduct *= value;
+            } else if (signal.operation === '-') {
+                result -= value;
             } else {
-                sum += value;
+                result += value;
             }
         });
         
-        originalData.push(sum);
+        if (hasModulation) {
+            result *= modulationProduct;
+        }
+        
+        originalData.push(result);
     }
     
     globalYMin = Math.min(...originalData);
@@ -320,7 +550,11 @@ function plotComposite() {
         if (index === 0) {
             currentSignalNotation += signal.notation;
         } else {
-            currentSignalNotation += ` ${signal.operation} ${signal.notation}`;
+            if (signal.operation === '*') {
+                currentSignalNotation += ` × ${signal.notation}`;
+            } else {
+                currentSignalNotation += ` ${signal.operation} ${signal.notation}`;
+            }
         }
     });
     
@@ -353,7 +587,11 @@ function applyOperation() {
             if (index === 0) {
                 currentSignalNotation += signal.notation;
             } else {
-                currentSignalNotation += ` ${signal.operation} ${signal.notation}`;
+                if (signal.operation === '*') {
+                    currentSignalNotation += ` × ${signal.notation}`;
+                } else {
+                    currentSignalNotation += ` ${signal.operation} ${signal.notation}`;
+                }
             }
         });
     } else {
@@ -439,23 +677,29 @@ function applyOperation() {
     createChart('outputChart', outputIndices, outputData, 'Output Signal: y[n]', 'output', globalXMin, globalXMax);
 }
 
+let transferredData = null;
+let transferredIndices = null;
+
 function transferOutputToOriginal() {
     if (outputData.length === 0) {
         alert('Please apply an operation first to generate output signal!');
         return;
     }
     
+    // Build notation from current operation before clearing
     let currentSignalNotation = '';
     if (compositeSignals.length > 0) {
         compositeSignals.forEach((signal, index) => {
             if (index === 0) {
                 currentSignalNotation += signal.notation;
             } else {
-                currentSignalNotation += ` ${signal.operation} ${signal.notation}`;
+                if (signal.operation === '*') {
+                    currentSignalNotation += ` × ${signal.notation}`;
+                } else {
+                    currentSignalNotation += ` ${signal.operation} ${signal.notation}`;
+                }
             }
         });
-    } else {
-        currentSignalNotation = 'Unknown signal';
     }
     
     const opType = document.getElementById('operationType').value;
@@ -490,15 +734,18 @@ function transferOutputToOriginal() {
             break;
     }
     
+    transferredData = [...outputData];
+    transferredIndices = [...outputIndices];
+    
     originalData = [...outputData];
     originalIndices = [...outputIndices];
     
+    // Store as a display-only "custom" signal that shows notation but won't be re-evaluated
     compositeSignals = [{
-        type: 'custom',
+        type: 'transferred',
         operation: '+',
         notation: newNotation,
-        amplitude: 1,
-        shift: 0
+        isTransferred: true
     }];
     
     updateCompositeDisplay();
@@ -520,7 +767,11 @@ function transferOutputToOriginal() {
 }
 
 function createChart(canvasId, indices, data, title, type, forceXMin = null, forceXMax = null) {
-    const ctx = document.getElementById(canvasId).getContext('2d');
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) return;
+    
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
     
     if ((type === 'original' && originalChart) || (type === 'output' && outputChart)) {
         if (type === 'original') {
@@ -557,22 +808,51 @@ function createChart(canvasId, indices, data, title, type, forceXMin = null, for
     const actualXMin = minIndex - xPadding;
     const actualXMax = maxIndex + xPadding;
 
+    const chartData = indices.map((n, i) => ({
+        x: n,
+        y: data[i]
+    }));
+
+    const datasets = isDiscreteView ? [
+        {
+            type: 'bar',
+            data: chartData,
+            backgroundColor: type === 'original' ? 'rgba(102, 126, 234, 0.7)' : 'rgba(240, 147, 251, 0.7)',
+            borderWidth: 0,
+            barPercentage: 0.05,
+            categoryPercentage: 1,
+            order: 2
+        },
+        {
+            type: 'scatter',
+            data: chartData,
+            pointRadius: 5,
+            pointBackgroundColor: type === 'original' ? '#667eea' : '#f093fb',
+            pointBorderColor: '#fff',
+            pointBorderWidth: 2,
+            order: 1
+        }
+    ] : [
+        {
+            type: 'line',
+            data: chartData,
+            showLine: true,
+            borderColor: type === 'original' ? '#667eea' : '#f093fb',
+            backgroundColor: type === 'original' ? 'rgba(102, 126, 234, 0.1)' : 'rgba(240, 147, 251, 0.1)',
+            borderWidth: 2,
+            pointRadius: 5,
+            pointBackgroundColor: type === 'original' ? '#667eea' : '#f093fb',
+            pointBorderColor: '#fff',
+            pointBorderWidth: 2,
+            tension: 0
+        }
+    ];
+
     const chart = new Chart(ctx, {
         type: 'line',
         data: {
             labels: indices,
-            datasets: [{
-                label: title,
-                data: data,
-                borderColor: type === 'original' ? '#667eea' : '#f093fb',
-                backgroundColor: type === 'original' ? 'rgba(102, 126, 234, 0.1)' : 'rgba(240, 147, 251, 0.1)',
-                borderWidth: 2,
-                pointRadius: 5,
-                pointBackgroundColor: type === 'original' ? '#667eea' : '#f093fb',
-                pointBorderColor: '#fff',
-                pointBorderWidth: 2,
-                tension: 0
-            }]
+            datasets: datasets
         },
         options: {
             responsive: true,
@@ -597,13 +877,13 @@ function createChart(canvasId, indices, data, title, type, forceXMin = null, for
                     },
                     grid: {
                         color: function(context) {
-                            if (Math.abs(context.tick.value) < 0.001) {
+                            if (context.tick && Math.abs(context.tick.value) < 0.001) {
                                 return 'rgba(0, 0, 0, 0.8)';
                             }
                             return 'rgba(0,0,0,0.08)';
                         },
                         lineWidth: function(context) {
-                            if (Math.abs(context.tick.value) < 0.001) {
+                            if (context.tick && Math.abs(context.tick.value) < 0.001) {
                                 return 3;
                             }
                             return 1;
@@ -630,13 +910,13 @@ function createChart(canvasId, indices, data, title, type, forceXMin = null, for
                     },
                     grid: {
                         color: function(context) {
-                            if (Math.abs(context.tick.value) < 0.001) {
+                            if (context.tick && Math.abs(context.tick.value) < 0.001) {
                                 return 'rgba(0, 0, 0, 0.8)';
                             }
                             return 'rgba(0,0,0,0.08)';
                         },
                         lineWidth: function(context) {
-                            if (Math.abs(context.tick.value) < 0.001) {
+                            if (context.tick && Math.abs(context.tick.value) < 0.001) {
                                 return 3;
                             }
                             return 1;
@@ -659,4 +939,9 @@ function createChart(canvasId, indices, data, title, type, forceXMin = null, for
     } else {
         outputChart = chart;
     }
+} 
+
+function toggleSidebar() {
+    const sidebar = document.getElementById('sidebarPanel');
+    sidebar.classList.toggle('show');
 }
