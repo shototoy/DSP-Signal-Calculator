@@ -225,10 +225,11 @@ input:checked + .slider:before {
     color: #667eea;
     margin-bottom: 10px;
     font-size: 1em;
+    padding: 0.5rem 1rem;
 }
 
 .function-text {
-    font-size: 13px;
+    font-size: 1.5rem;
     font-weight: 600;
     color: #495057;
     background: white;
@@ -241,25 +242,13 @@ input:checked + .slider:before {
     overflow-x: auto;
 }
 
-.storage-section {
-    background: #e7f3ff;
-    padding: 0.5rem;
-    border-radius: 10px;
-    border-left: 4px solid #007bff;
-    flex-shrink: 0;
-}
-
-.storage-section h3 {
-    color: #007bff;
-    margin-bottom: 10px;
-    font-size: 1em;
-}
 
 .storage-display {   
     background: white;
     border-radius: 5px;
     margin-bottom: 12px;
     overflow-y: auto;
+    font-family: 'Courier New', monospace;
 }
 
 .storage-display::-webkit-scrollbar {
@@ -317,7 +306,7 @@ input:checked + .slider:before {
 .storage-buttons {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 10px;
+    gap: 10px; margin-top: 0.25rem;
 }
 
 .btn-store {

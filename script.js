@@ -396,7 +396,6 @@ function storeCurrentSignal() {
     });
     
     updateStorageDisplay();
-    alert('Signal stored successfully!');
 }
 
 function openRetrieveModal(index) {
