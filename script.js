@@ -415,24 +415,34 @@ function openRetrieveModal(index) {
             </div>
         </div>
         <div class="input-group">
-            <label>Operation Type:</label>
-            <select id="modalOperation">
-                <option value="+">+ Add</option>
-                <option value="-">- Subtract</option>
-                <option value="*">× Modulate</option>
+            <label>Retrieval Mode:</label>
+            <select id="retrievalMode">
+                <option value="add">+ Add to Current</option>
+                <option value="subtract">- Subtract from Current</option>
+                <option value="modulate">× Modulate with Current</option>
+                <option value="exact">= Replace Current</option>
             </select>
         </div>
     `;
     
     const oldAddFunction = window.addToFunction;
     window.addToFunction = () => {
-        const operation = document.getElementById('modalOperation').value;
+        const mode = document.getElementById('retrievalMode').value;
         
-        stored.signals.forEach(signal => {
-            const signalCopy = JSON.parse(JSON.stringify(signal));
-            signalCopy.operation = operation;
-            compositeSignals.push(signalCopy);
-        });
+        if (mode === 'exact') {
+            compositeSignals = [];
+            stored.signals.forEach(signal => {
+                const signalCopy = JSON.parse(JSON.stringify(signal));
+                compositeSignals.push(signalCopy);
+            });
+        } else {
+            const operation = mode === 'add' ? '+' : mode === 'subtract' ? '-' : '*';
+            stored.signals.forEach(signal => {
+                const signalCopy = JSON.parse(JSON.stringify(signal));
+                signalCopy.operation = operation;
+                compositeSignals.push(signalCopy);
+            });
+        }
         
         updateCompositeDisplay();
         closeModal();
