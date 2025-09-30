@@ -6,6 +6,9 @@ let outputIndices = [];
 let originalChart = null;
 let outputChart = null;
 let currentSignalType = '';
+let lastOperationDescription = '';
+let globalYMin = null;
+let globalYMax = null;
 
 function openModal(signalType) {
     currentSignalType = signalType;
@@ -278,10 +281,13 @@ function applyOperation() {
     outputData = [];
     outputIndices = [];
 
+    let operationDesc = '';
+    
     switch(opType) {
         case 'shift':
             outputIndices = originalIndices.map(n => n + param);
             outputData = [...originalData];
+            operationDesc = `Applied Time Shifting: k = ${param}`;
             break;
         case 'scale':
             if (param === 0) {
@@ -290,25 +296,37 @@ function applyOperation() {
             }
             outputIndices = originalIndices.map(n => n / param);
             outputData = [...originalData];
+            operationDesc = `Applied Time Scaling: a = ${param}`;
             break;
         case 'fold':
             outputIndices = originalIndices.map(n => -n).reverse();
             outputData = [...originalData].reverse();
+            operationDesc = `Applied Time Folding: n → -n`;
             break;
         case 'add':
             outputIndices = [...originalIndices];
             outputData = originalData.map(x => x + param);
+            operationDesc = `Applied Addition: + ${param}`;
             break;
         case 'multiply':
             outputIndices = [...originalIndices];
             outputData = originalData.map(x => x * param);
+            operationDesc = `Applied Multiplication: × ${param}`;
             break;
         case 'reverse':
             outputIndices = [...originalIndices].reverse();
             outputData = [...originalData].reverse();
+            operationDesc = `Applied Reverse Sequence`;
             break;
     }
+    
+    lastOperationDescription = operationDesc;
+    
+    const allData = [...originalData, ...outputData];
+    globalYMin = Math.min(...allData);
+    globalYMax = Math.max(...allData);
 
+    createChart('originalChart', originalIndices, originalData, 'Original Signal: x[n]', 'original');
     createChart('outputChart', outputIndices, outputData, 'Output Signal: y[n]', 'output');
 }
 
@@ -321,9 +339,53 @@ function transferOutputToOriginal() {
     originalData = [...outputData];
     originalIndices = [...outputIndices];
     
-    createChart('originalChart', originalIndices, originalData, 'Original Signal: x[n]', 'original');
+    const currentComposite = document.getElementById('compositeFunction').textContent;
     
-    alert('Output signal transferred to Original signal!');
+    const opType = document.getElementById('operationType').value;
+    const param = parseFloat(document.getElementById('paramValue').value) || 0;
+    
+    let newNotation = '';
+    
+    if (currentComposite === 'No signals added yet') {
+        newNotation = 'Unknown signal';
+    } else {
+        const baseSignal = currentComposite;
+        
+        switch(opType) {
+            case 'shift':
+                if (param > 0) {
+                    newNotation = baseSignal.replace(/\[n([^\]]*)\]/g, `[n-${param}$1]`).replace(/--/g, '+');
+                } else if (param < 0) {
+                    newNotation = baseSignal.replace(/\[n([^\]]*)\]/g, `[n+${Math.abs(param)}$1]`);
+                } else {
+                    newNotation = baseSignal;
+                }
+                break;
+            case 'fold':
+                newNotation = baseSignal.replace(/\[n([^\]]*)\]/g, '[-n$1]');
+                break;
+            case 'scale':
+                newNotation = baseSignal.replace(/\[n([^\]]*)\]/g, `[${param}n$1]`);
+                break;
+            case 'add':
+                newNotation = `(${baseSignal}) + ${param}`;
+                break;
+            case 'multiply':
+                newNotation = `${param} × (${baseSignal})`;
+                break;
+            case 'reverse':
+                newNotation = `reverse(${baseSignal})`;
+                break;
+        }
+    }
+    
+    const displayText = `${lastOperationDescription}\nCurrent Signal: ${newNotation}`;
+    document.getElementById('compositeFunction').textContent = displayText;
+    
+    globalYMin = Math.min(...originalData);
+    globalYMax = Math.max(...originalData);
+    
+    createChart('originalChart', originalIndices, originalData, 'Original Signal: x[n]', 'original');
 }
 
 function createChart(canvasId, indices, data, title, type) {
@@ -336,6 +398,21 @@ function createChart(canvasId, indices, data, title, type) {
             outputChart.destroy();
         }
     }
+
+    const minIndex = Math.min(...indices);
+    const maxIndex = Math.max(...indices);
+    const xPadding = (maxIndex - minIndex) * 0.05 || 1;
+    
+    let yMin, yMax;
+    if (globalYMin !== null && globalYMax !== null) {
+        yMin = globalYMin;
+        yMax = globalYMax;
+    } else {
+        yMin = Math.min(...data);
+        yMax = Math.max(...data);
+    }
+    
+    const yPadding = (yMax - yMin) * 0.15 || 1;
 
     const chart = new Chart(ctx, {
         type: 'line',
@@ -364,27 +441,69 @@ function createChart(canvasId, indices, data, title, type) {
             },
             scales: {
                 x: {
+                    min: minIndex - xPadding,
+                    max: maxIndex + xPadding,
                     title: {
                         display: true,
                         text: 'n (sample index)',
                         font: {
-                            weight: 'bold'
+                            weight: 'bold',
+                            size: 14
                         }
                     },
                     grid: {
-                        color: 'rgba(0,0,0,0.05)'
+                        color: function(context) {
+                            if (context.tick.value === 0) {
+                                return 'rgba(0, 0, 0, 0.5)';
+                            }
+                            return 'rgba(0,0,0,0.08)';
+                        },
+                        lineWidth: function(context) {
+                            if (context.tick.value === 0) {
+                                return 3;
+                            }
+                            return 1;
+                        },
+                        drawBorder: true
+                    },
+                    ticks: {
+                        font: {
+                            size: 15,
+                            weight: '600'
+                        }
                     }
                 },
                 y: {
+                    min: yMin - yPadding,
+                    max: yMax + yPadding,
                     title: {
                         display: true,
                         text: 'Amplitude',
                         font: {
-                            weight: 'bold'
+                            weight: 'bold',
+                            size: 14
                         }
                     },
                     grid: {
-                        color: 'rgba(0,0,0,0.05)'
+                        color: function(context) {
+                            if (context.tick.value === 0) {
+                                return 'rgba(0, 0, 0, 0.5)';
+                            }
+                            return 'rgba(0,0,0,0.08)';
+                        },
+                        lineWidth: function(context) {
+                            if (context.tick.value === 0) {
+                                return 3;
+                            }
+                            return 1;
+                        },
+                        drawBorder: true
+                    },
+                    ticks: {
+                        font: {
+                            size: 15,
+                            weight: '600'
+                        }
                     }
                 }
             }
