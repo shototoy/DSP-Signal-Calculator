@@ -1,0 +1,3 @@
+IF output signal not used as Original signal and you performed another operation then that should still be applied to original signal and not the previously operation notation. Thats correct. BUT
+Multiple operations on the same signal shouldnt be a "NEW" Step, rather modification of previous steps
+
