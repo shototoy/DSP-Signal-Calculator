@@ -16,26 +16,77 @@ let globalXMax = null;
 let isDiscreteView = false;
 
 function toggleView() {
-    isDiscreteView = document.getElementById('viewToggle').checked;
+    const viewToggle = document.getElementById('viewToggle');
+    if (!viewToggle) return;
+    
+    isDiscreteView = viewToggle.checked;
     
     const leftLabel = document.querySelector('.slider-label.left');
     const rightLabel = document.querySelector('.slider-label.right');
     
+    if (leftLabel && rightLabel) {
+        if (isDiscreteView) {
+            leftLabel.classList.remove('active');
+            rightLabel.classList.add('active');
+        } else {
+            leftLabel.classList.add('active');
+            rightLabel.classList.remove('active');
+        }
+    }
+    
+    if (originalChart && originalData.length > 0) {
+        updateChartStyle(originalChart, 'original');
+    }
+    
+    if (outputChart && outputData.length > 0) {
+        updateChartStyle(outputChart, 'output');
+    }
+}
+
+function updateChartStyle(chart, type) {
+    const dataset = chart.data.datasets[0];
+    const dataPoints = dataset.data;
+    
     if (isDiscreteView) {
-        leftLabel.classList.remove('active');
-        rightLabel.classList.add('active');
+        chart.data.datasets = [
+            {
+                type: 'bar',
+                data: dataPoints,
+                backgroundColor: type === 'original' ? 'rgba(102, 126, 234, 0.7)' : 'rgba(240, 147, 251, 0.7)',
+                borderWidth: 0,
+                barPercentage: 0.05,
+                categoryPercentage: 1,
+                order: 2
+            },
+            {
+                type: 'scatter',
+                data: dataPoints,
+                pointRadius: 5,
+                pointBackgroundColor: type === 'original' ? '#667eea' : '#f093fb',
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2,
+                order: 1
+            }
+        ];
     } else {
-        leftLabel.classList.add('active');
-        rightLabel.classList.remove('active');
+        chart.data.datasets = [
+            {
+                type: 'line',
+                data: dataPoints,
+                showLine: true,
+                borderColor: type === 'original' ? '#667eea' : '#f093fb',
+                backgroundColor: type === 'original' ? 'rgba(102, 126, 234, 0.1)' : 'rgba(240, 147, 251, 0.1)',
+                borderWidth: 2,
+                pointRadius: 5,
+                pointBackgroundColor: type === 'original' ? '#667eea' : '#f093fb',
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2,
+                tension: 0
+            }
+        ];
     }
     
-    if (originalData.length > 0) {
-        createChart('originalChart', originalIndices, originalData, 'Original Signal: x[n]', 'original', globalXMin, globalXMax);
-    }
-    
-    if (outputData.length > 0) {
-        createChart('outputChart', outputIndices, outputData, 'Output Signal: y[n]', 'output', globalXMin, globalXMax);
-    }
+    chart.update();
 }
 
 function openModal(signalType) {
@@ -160,8 +211,9 @@ function closeModal() {
 
 function addToFunction() {
     const operation = document.getElementById('modalOperation').value;
-    const shift = parseInt(document.getElementById('modalShift').value) || 0;
-    const amplitude = parseFloat(document.getElementById('modalAmplitude')?.value) || 1;
+    const shift = parseInt(document.getElementById('modalShift')?.value) || 0;
+    const amplitudeEl = document.getElementById('modalAmplitude');
+    const amplitude = amplitudeEl ? parseFloat(amplitudeEl.value) || 1 : 1;
     
     let signalObj = {
         type: currentSignalType,
@@ -185,15 +237,19 @@ function addToFunction() {
             notation = `${ampStr}r[${shiftStr}]`;
             break;
         case 'exp':
-            const base = parseFloat(document.getElementById('modalExpBase').value) || 0.8;
+            const expBaseEl = document.getElementById('modalExpBase');
+            const base = expBaseEl ? parseFloat(expBaseEl.value) || 0.8 : 0.8;
             signalObj.base = base;
             notation = `${ampStr}(${base})^${shiftStr}`;
             break;
         case 'sin':
         case 'cos':
-            const amp = parseFloat(document.getElementById('modalSinAmp').value) || 1;
-            const freq = parseFloat(document.getElementById('modalSinFreq').value) || 0.5;
-            const phase = parseFloat(document.getElementById('modalSinPhase').value) || 0;
+            const sinAmpEl = document.getElementById('modalSinAmp');
+            const sinFreqEl = document.getElementById('modalSinFreq');
+            const sinPhaseEl = document.getElementById('modalSinPhase');
+            const amp = sinAmpEl ? parseFloat(sinAmpEl.value) || 1 : 1;
+            const freq = sinFreqEl ? parseFloat(sinFreqEl.value) || 0.5 : 0.5;
+            const phase = sinPhaseEl ? parseFloat(sinPhaseEl.value) || 0 : 0;
             signalObj.sinAmp = amp;
             signalObj.sinFreq = freq;
             signalObj.sinPhase = phase;
@@ -544,7 +600,11 @@ function transferOutputToOriginal() {
 }
 
 function createChart(canvasId, indices, data, title, type, forceXMin = null, forceXMax = null) {
-    const ctx = document.getElementById(canvasId).getContext('2d');
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) return;
+    
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
     
     if ((type === 'original' && originalChart) || (type === 'output' && outputChart)) {
         if (type === 'original') {
@@ -581,25 +641,28 @@ function createChart(canvasId, indices, data, title, type, forceXMin = null, for
     const actualXMin = minIndex - xPadding;
     const actualXMax = maxIndex + xPadding;
 
+    const chartData = indices.map((n, i) => ({
+        x: n,
+        y: data[i]
+    }));
+
     const chart = new Chart(ctx, {
-        type: isDiscreteView ? 'bar' : 'line',
+        type: 'line',
         data: {
             labels: indices,
             datasets: [{
+                type: 'line',
                 label: title,
-                data: data,
+                data: chartData,
+                showLine: true,
                 borderColor: type === 'original' ? '#667eea' : '#f093fb',
-                backgroundColor: isDiscreteView 
-                    ? (type === 'original' ? 'rgba(102, 126, 234, 0.7)' : 'rgba(240, 147, 251, 0.7)')
-                    : (type === 'original' ? 'rgba(102, 126, 234, 0.1)' : 'rgba(240, 147, 251, 0.1)'),
-                borderWidth: isDiscreteView ? 0 : 2,
-                pointRadius: isDiscreteView ? 0 : 5,
+                backgroundColor: type === 'original' ? 'rgba(102, 126, 234, 0.1)' : 'rgba(240, 147, 251, 0.1)',
+                borderWidth: 2,
+                pointRadius: 5,
                 pointBackgroundColor: type === 'original' ? '#667eea' : '#f093fb',
                 pointBorderColor: '#fff',
                 pointBorderWidth: 2,
-                tension: 0,
-                barPercentage: 0.4,
-                categoryPercentage: 0.8
+                tension: 0
             }]
         },
         options: {
@@ -625,13 +688,13 @@ function createChart(canvasId, indices, data, title, type, forceXMin = null, for
                     },
                     grid: {
                         color: function(context) {
-                            if (Math.abs(context.tick.value) < 0.001) {
+                            if (context.tick && Math.abs(context.tick.value) < 0.001) {
                                 return 'rgba(0, 0, 0, 0.8)';
                             }
                             return 'rgba(0,0,0,0.08)';
                         },
                         lineWidth: function(context) {
-                            if (Math.abs(context.tick.value) < 0.001) {
+                            if (context.tick && Math.abs(context.tick.value) < 0.001) {
                                 return 3;
                             }
                             return 1;
@@ -658,13 +721,13 @@ function createChart(canvasId, indices, data, title, type, forceXMin = null, for
                     },
                     grid: {
                         color: function(context) {
-                            if (Math.abs(context.tick.value) < 0.001) {
+                            if (context.tick && Math.abs(context.tick.value) < 0.001) {
                                 return 'rgba(0, 0, 0, 0.8)';
                             }
                             return 'rgba(0,0,0,0.08)';
                         },
                         lineWidth: function(context) {
-                            if (Math.abs(context.tick.value) < 0.001) {
+                            if (context.tick && Math.abs(context.tick.value) < 0.001) {
                                 return 3;
                             }
                             return 1;
