@@ -247,6 +247,121 @@ input:checked + .slider:before {
     overflow-y: auto;
 }
 
+.storage-section {
+    background: #e7f3ff;
+    padding: 15px;
+    border-radius: 10px;
+    border-left: 4px solid #007bff;
+    flex-shrink: 0;
+}
+
+.storage-section h3 {
+    color: #007bff;
+    margin-bottom: 10px;
+    font-size: 1em;
+}
+
+.storage-display {
+    background: white;
+    padding: 12px;
+    border-radius: 5px;
+    margin-bottom: 12px;
+    min-height: 80px;
+    max-height: 150px;
+    overflow-y: auto;
+}
+
+.storage-display::-webkit-scrollbar {
+    width: 6px;
+}
+
+.storage-display::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.storage-display::-webkit-scrollbar-thumb {
+    background: #007bff;
+    border-radius: 10px;
+}
+
+.storage-empty {
+    color: #6c757d;
+    font-style: italic;
+    text-align: center;
+    padding: 20px 10px;
+    font-size: 13px;
+}
+
+.storage-item {
+    background: #e7f3ff;
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 8px;
+    border-left: 3px solid #007bff;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.storage-item:hover {
+    background: #d0e7ff;
+    transform: translateX(2px);
+}
+
+.storage-item-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #007bff;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+}
+
+.storage-item-notation {
+    font-size: 13px;
+    font-weight: 600;
+    color: #495057;
+    font-family: 'Courier New', monospace;
+    word-wrap: break-word;
+}
+
+.storage-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.btn-store {
+    padding: 10px;
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 13px;
+    transition: transform 0.2s;
+}
+
+.btn-store:hover {
+    transform: translateY(-2px);
+}
+
+.btn-clear-storage {
+    padding: 10px;
+    background: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 13px;
+    transition: transform 0.2s;
+}
+
+.btn-clear-storage:hover {
+    transform: translateY(-2px);
+}
+
 .history-panel {
     background: #f8f9fa;
     padding: 15px;

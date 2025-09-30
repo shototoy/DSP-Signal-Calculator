@@ -34,6 +34,20 @@
                         <button class="signal-btn" onclick="openModal('impulse')">δ[n] Impulse</button>
                         <button class="signal-btn" onclick="openModal('step')">u[n] Step</button>
                         <button class="signal-btn" onclick="openModal('ramp')">r[n] Ramp</button>
+                        <button class="signal-btn" onclick="openModal('exp')">a^n Exponential</button>
+                        <button class="signal-btn" onclick="openModal('sin')">sin Sinusoid</button>
+                        <button class="signal-btn" onclick="openModal('cos')">cos Cosine</button>
+                    </div>
+                </div>
+
+                <div class="storage-section">
+                    <h3>📦 Signal Storage:</h3>
+                    <div id="storageDisplay" class="storage-display">
+                        <div class="storage-empty">No signals stored</div>
+                    </div>
+                    <div class="storage-buttons">
+                        <button class="btn-store" onclick="storeCurrentSignal()">💾 Store Current</button>
+                        <button class="btn-clear-storage" onclick="clearStoredSignals()">🗑️ Clear All</button>
                     </div>
                 </div>
 

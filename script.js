@@ -14,6 +14,7 @@ let lastOperationKey = '';
 let globalXMin = null;
 let globalXMax = null;
 let isDiscreteView = false;
+let storedSignals = [];
 
 function toggleView() {
     const viewToggle = document.getElementById('viewToggle');
@@ -133,10 +134,11 @@ function openModal(signalType) {
 function generateBasicModalBody() {
     return `
         <div class="input-group">
-            <label>Operation (Add/Subtract):</label>
+            <label>Operation Type:</label>
             <select id="modalOperation">
                 <option value="+">+ Add</option>
                 <option value="-">- Subtract</option>
+                <option value="*">× Modulate</option>
             </select>
         </div>
         <div class="input-group">
@@ -154,10 +156,11 @@ function generateBasicModalBody() {
 function generateExpModalBody() {
     return `
         <div class="input-group">
-            <label>Operation (Add/Subtract):</label>
+            <label>Operation Type:</label>
             <select id="modalOperation">
                 <option value="+">+ Add</option>
                 <option value="-">- Subtract</option>
+                <option value="*">× Modulate</option>
             </select>
         </div>
         <div class="input-group">
@@ -178,10 +181,11 @@ function generateExpModalBody() {
 function generateSinusoidModalBody() {
     return `
         <div class="input-group">
-            <label>Operation (Add/Subtract):</label>
+            <label>Operation Type:</label>
             <select id="modalOperation">
                 <option value="+">+ Add</option>
                 <option value="-">- Subtract</option>
+                <option value="*">× Modulate</option>
             </select>
         </div>
         <div class="param-grid">
@@ -210,14 +214,26 @@ function closeModal() {
 }
 
 function addToFunction() {
-    const operation = document.getElementById('modalOperation').value;
-    const shift = parseInt(document.getElementById('modalShift')?.value) || 0;
+    const operationSelect = document.getElementById('modalOperation');
+    if (!operationSelect) {
+        console.error('Modal operation select not found!');
+        closeModal();
+        return;
+    }
+    
+    // Force read the current selected value
+    const operation = operationSelect.options[operationSelect.selectedIndex].value;
+    
+    const shiftInput = document.getElementById('modalShift');
+    const shift = shiftInput ? parseInt(shiftInput.value) || 0 : 0;
+    
     const amplitudeEl = document.getElementById('modalAmplitude');
     const amplitude = amplitudeEl ? parseFloat(amplitudeEl.value) || 1 : 1;
     
+    // Create signal object with explicit operation assignment
     let signalObj = {
         type: currentSignalType,
-        operation: operation,
+        operation: String(operation), // Force string conversion
         shift: shift,
         amplitude: amplitude
     };
@@ -260,11 +276,16 @@ function addToFunction() {
     }
     
     signalObj.notation = notation;
-    compositeSignals.push(signalObj);
+    
+    // Deep copy to ensure no reference issues
+    const signalCopy = JSON.parse(JSON.stringify(signalObj));
+    
+    console.log('Adding signal with operation:', signalCopy.operation);
+    
+    compositeSignals.push(signalCopy);
     updateCompositeDisplay();
     closeModal();
 }
-
 function updateCompositeDisplay() {
     const display = document.getElementById('compositeFunction');
     
@@ -278,7 +299,11 @@ function updateCompositeDisplay() {
         if (index === 0) {
             text += signal.notation;
         } else {
-            text += ` ${signal.operation} ${signal.notation}`;
+            if (signal.operation === '*') {
+                text += ` × ${signal.notation}`;
+            } else {
+                text += ` ${signal.operation} ${signal.notation}`;
+            }
         }
     });
     
@@ -316,6 +341,118 @@ function updateHistoryDisplay() {
         
         display.appendChild(historyBlock);
     });
+}
+
+function updateStorageDisplay() {
+    const display = document.getElementById('storageDisplay');
+    display.innerHTML = '';
+    
+    if (storedSignals.length === 0) {
+        display.innerHTML = '<div class="storage-empty">No signals stored</div>';
+        return;
+    }
+    
+    storedSignals.forEach((stored, index) => {
+        const storageItem = document.createElement('div');
+        storageItem.className = 'storage-item';
+        storageItem.onclick = () => openRetrieveModal(index);
+        
+        const label = document.createElement('div');
+        label.className = 'storage-item-label';
+        label.textContent = `Stored Signal ${index + 1}:`;
+        
+        const notation = document.createElement('div');
+        notation.className = 'storage-item-notation';
+        notation.textContent = stored.notation;
+        
+        storageItem.appendChild(label);
+        storageItem.appendChild(notation);
+        display.appendChild(storageItem);
+    });
+}
+
+function storeCurrentSignal() {
+    if (compositeSignals.length === 0) {
+        alert('Please add at least one signal to store!');
+        return;
+    }
+    
+    let notation = '';
+    compositeSignals.forEach((signal, index) => {
+        if (index === 0) {
+            notation += signal.notation;
+        } else {
+            if (signal.operation === '*') {
+                notation += ` × ${signal.notation}`;
+            } else {
+                notation += ` ${signal.operation} ${signal.notation}`;
+            }
+        }
+    });
+    
+    storedSignals.push({
+        signals: JSON.parse(JSON.stringify(compositeSignals)),
+        notation: notation
+    });
+    
+    updateStorageDisplay();
+    alert('Signal stored successfully!');
+}
+
+function openRetrieveModal(index) {
+    const stored = storedSignals[index];
+    const modal = document.getElementById('signalModal');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalBody = document.getElementById('modalBody');
+    
+    modalTitle.textContent = 'Retrieve Stored Signal';
+    modalBody.innerHTML = `
+        <div style="background: #e7f3ff; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #007bff;">
+            <div style="font-size: 11px; font-weight: 700; color: #007bff; text-transform: uppercase; margin-bottom: 8px;">
+                Signal to Retrieve:
+            </div>
+            <div style="font-size: 14px; font-weight: 600; color: #495057; font-family: 'Courier New', monospace;">
+                ${stored.notation}
+            </div>
+        </div>
+        <div class="input-group">
+            <label>Operation Type:</label>
+            <select id="modalOperation">
+                <option value="+">+ Add</option>
+                <option value="-">- Subtract</option>
+                <option value="*">× Modulate</option>
+            </select>
+        </div>
+    `;
+    
+    const oldAddFunction = window.addToFunction;
+    window.addToFunction = () => {
+        const operation = document.getElementById('modalOperation').value;
+        
+        stored.signals.forEach(signal => {
+            const signalCopy = JSON.parse(JSON.stringify(signal));
+            signalCopy.operation = operation;
+            compositeSignals.push(signalCopy);
+        });
+        
+        updateCompositeDisplay();
+        closeModal();
+        window.addToFunction = oldAddFunction;
+    };
+    
+    modal.classList.add('show');
+}
+
+function clearStoredSignals() {
+    if (storedSignals.length === 0) {
+        alert('No stored signals to clear!');
+        return;
+    }
+    
+    if (confirm('Are you sure you want to clear all stored signals?')) {
+        storedSignals = [];
+        updateStorageDisplay();
+    }
 }
 
 function clearComposite() {
@@ -358,11 +495,6 @@ function evaluateSignal(n, signal) {
 }
 
 function plotComposite() {
-    if (compositeSignals.length === 0) {
-        alert('Please add at least one signal to the function!');
-        return;
-    }
-    
     const start = parseInt(document.getElementById('globalRangeStart').value);
     const end = parseInt(document.getElementById('globalRangeEnd').value);
     
@@ -370,24 +502,43 @@ function plotComposite() {
         alert('Invalid range!');
         return;
     }
+    const hasTransferred = compositeSignals.some(s => s.isTransferred);
+    const hasNewSignals = compositeSignals.some(s => !s.isTransferred);
     
     originalIndices = [];
     originalData = [];
     
     for (let n = start; n <= end; n++) {
         originalIndices.push(n);
-        let sum = 0;
-        
-        compositeSignals.forEach(signal => {
+        let result = 0;
+        if (hasTransferred && transferredData !== null) {
+            const transferredIndex = transferredIndices.indexOf(n);
+            if (transferredIndex !== -1) {
+                result = transferredData[transferredIndex];
+            }
+        }
+        let hasModulation = false;
+        let modulationProduct = 1;
+        compositeSignals.forEach((signal, index) => {
+            if (signal.isTransferred) return; 
+            
             const value = evaluateSignal(n, signal);
-            if (signal.operation === '-') {
-                sum -= value;
+            
+            if (signal.operation === '*') {
+                hasModulation = true;
+                modulationProduct *= value;
+            } else if (signal.operation === '-') {
+                result -= value;
             } else {
-                sum += value;
+                result += value;
             }
         });
         
-        originalData.push(sum);
+        if (hasModulation) {
+            result *= modulationProduct;
+        }
+        
+        originalData.push(result);
     }
     
     globalYMin = Math.min(...originalData);
@@ -400,7 +551,11 @@ function plotComposite() {
         if (index === 0) {
             currentSignalNotation += signal.notation;
         } else {
-            currentSignalNotation += ` ${signal.operation} ${signal.notation}`;
+            if (signal.operation === '*') {
+                currentSignalNotation += ` × ${signal.notation}`;
+            } else {
+                currentSignalNotation += ` ${signal.operation} ${signal.notation}`;
+            }
         }
     });
     
@@ -433,7 +588,11 @@ function applyOperation() {
             if (index === 0) {
                 currentSignalNotation += signal.notation;
             } else {
-                currentSignalNotation += ` ${signal.operation} ${signal.notation}`;
+                if (signal.operation === '*') {
+                    currentSignalNotation += ` × ${signal.notation}`;
+                } else {
+                    currentSignalNotation += ` ${signal.operation} ${signal.notation}`;
+                }
             }
         });
     } else {
@@ -519,23 +678,29 @@ function applyOperation() {
     createChart('outputChart', outputIndices, outputData, 'Output Signal: y[n]', 'output', globalXMin, globalXMax);
 }
 
+let transferredData = null;
+let transferredIndices = null;
+
 function transferOutputToOriginal() {
     if (outputData.length === 0) {
         alert('Please apply an operation first to generate output signal!');
         return;
     }
     
+    // Build notation from current operation before clearing
     let currentSignalNotation = '';
     if (compositeSignals.length > 0) {
         compositeSignals.forEach((signal, index) => {
             if (index === 0) {
                 currentSignalNotation += signal.notation;
             } else {
-                currentSignalNotation += ` ${signal.operation} ${signal.notation}`;
+                if (signal.operation === '*') {
+                    currentSignalNotation += ` × ${signal.notation}`;
+                } else {
+                    currentSignalNotation += ` ${signal.operation} ${signal.notation}`;
+                }
             }
         });
-    } else {
-        currentSignalNotation = 'Unknown signal';
     }
     
     const opType = document.getElementById('operationType').value;
@@ -570,15 +735,18 @@ function transferOutputToOriginal() {
             break;
     }
     
+    transferredData = [...outputData];
+    transferredIndices = [...outputIndices];
+    
     originalData = [...outputData];
     originalIndices = [...outputIndices];
     
+    // Store as a display-only "custom" signal that shows notation but won't be re-evaluated
     compositeSignals = [{
-        type: 'custom',
+        type: 'transferred',
         operation: '+',
         notation: newNotation,
-        amplitude: 1,
-        shift: 0
+        isTransferred: true
     }];
     
     updateCompositeDisplay();
@@ -772,4 +940,4 @@ function createChart(canvasId, indices, data, title, type, forceXMin = null, for
     } else {
         outputChart = chart;
     }
-}
+} 
