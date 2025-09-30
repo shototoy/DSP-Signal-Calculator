@@ -13,6 +13,30 @@ let operationHistory = [];
 let lastOperationKey = '';
 let globalXMin = null;
 let globalXMax = null;
+let isDiscreteView = false;
+
+function toggleView() {
+    isDiscreteView = document.getElementById('viewToggle').checked;
+    
+    const leftLabel = document.querySelector('.slider-label.left');
+    const rightLabel = document.querySelector('.slider-label.right');
+    
+    if (isDiscreteView) {
+        leftLabel.classList.remove('active');
+        rightLabel.classList.add('active');
+    } else {
+        leftLabel.classList.add('active');
+        rightLabel.classList.remove('active');
+    }
+    
+    if (originalData.length > 0) {
+        createChart('originalChart', originalIndices, originalData, 'Original Signal: x[n]', 'original', globalXMin, globalXMax);
+    }
+    
+    if (outputData.length > 0) {
+        createChart('outputChart', outputIndices, outputData, 'Output Signal: y[n]', 'output', globalXMin, globalXMax);
+    }
+}
 
 function openModal(signalType) {
     currentSignalType = signalType;
@@ -558,20 +582,24 @@ function createChart(canvasId, indices, data, title, type, forceXMin = null, for
     const actualXMax = maxIndex + xPadding;
 
     const chart = new Chart(ctx, {
-        type: 'line',
+        type: isDiscreteView ? 'bar' : 'line',
         data: {
             labels: indices,
             datasets: [{
                 label: title,
                 data: data,
                 borderColor: type === 'original' ? '#667eea' : '#f093fb',
-                backgroundColor: type === 'original' ? 'rgba(102, 126, 234, 0.1)' : 'rgba(240, 147, 251, 0.1)',
-                borderWidth: 2,
-                pointRadius: 5,
+                backgroundColor: isDiscreteView 
+                    ? (type === 'original' ? 'rgba(102, 126, 234, 0.7)' : 'rgba(240, 147, 251, 0.7)')
+                    : (type === 'original' ? 'rgba(102, 126, 234, 0.1)' : 'rgba(240, 147, 251, 0.1)'),
+                borderWidth: isDiscreteView ? 0 : 2,
+                pointRadius: isDiscreteView ? 0 : 5,
                 pointBackgroundColor: type === 'original' ? '#667eea' : '#f093fb',
                 pointBorderColor: '#fff',
                 pointBorderWidth: 2,
-                tension: 0
+                tension: 0,
+                barPercentage: 0.4,
+                categoryPercentage: 0.8
             }]
         },
         options: {

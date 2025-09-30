@@ -11,6 +11,17 @@
     <div class="container">
         <h1>🔊 Discrete Signal Processing Operations</h1>
         
+        <div class="view-toolbar">
+            <label>Display Mode:</label>
+            <label class="toggle-switch">
+                <input type="checkbox" id="viewToggle" onchange="toggleView()">
+                <span class="slider">
+                    <span class="slider-label left active">Continuous</span>
+                    <span class="slider-label right">Discrete</span>
+                </span>
+            </label>
+        </div>
+        
         <div class="main-grid">
             <div class="left-panel">
                 <div class="info">
@@ -23,10 +34,6 @@
                         <button class="signal-btn" onclick="openModal('impulse')">δ[n] Impulse</button>
                         <button class="signal-btn" onclick="openModal('step')">u[n] Step</button>
                         <button class="signal-btn" onclick="openModal('ramp')">r[n] Ramp</button>
-                        <!-- Temporarily removed for Live View branch -->
-                        <!-- <button class="signal-btn" onclick="openModal('exp')">a^n Exp</button>
-                        <button class="signal-btn" onclick="openModal('sin')">sin(ωn)</button>
-                        <button class="signal-btn" onclick="openModal('cos')">cos(ωn)</button> -->
                     </div>
                 </div>
 
