@@ -941,3 +941,8 @@ function createChart(canvasId, indices, data, title, type, forceXMin = null, for
         outputChart = chart;
     }
 } 
+
+function toggleSidebar() {
+    const sidebar = document.getElementById('sidebarPanel');
+    sidebar.classList.toggle('show');
+}
