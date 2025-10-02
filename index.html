@@ -58,7 +58,7 @@
                 </div>
 
                 <div class="operation-section">
-                    <h3>Apply Operation:</h3>
+                    <h3>Operations:</h3>
                     
                     <div class="input-group">
                         <label>Operation Type:</label>
@@ -77,7 +77,15 @@
                         <input type="number" id="paramValue" placeholder="e.g., 2">
                     </div>
 
-                    <button class="btn-primary" onclick="applyOperation()">⚡ Apply Operation</button>
+                    <div class="operation-buttons">
+                        <button class="btn-view" onclick="viewOperation()">👁️ View Operation</button>
+                        <button class="btn-apply" onclick="applyOperation()">⚡ Apply Operation</button>
+                    </div>
+                    
+                    <div class="operation-info">
+                        <small><strong>View:</strong> Preview only, no stacking</small>
+                        <small><strong>Apply:</strong> Stacks operations, adds to history</small>
+                    </div>
                 </div>
             </div>
 

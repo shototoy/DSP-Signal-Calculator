@@ -16,7 +16,10 @@ const state = {
     isDiscreteView: false,
     storedSignals: [],
     transferredData: null,
-    transferredIndices: null
+    transferredIndices: null,
+    appliedOperations: [],
+    tempWorkingData: null,
+    tempWorkingIndices: null
 };
 
 const SIGNAL_CONFIG = {
@@ -488,6 +491,10 @@ function plotComposite() {
         return;
     }
     
+    state.appliedOperations = [];
+    state.tempWorkingData = null;
+    state.tempWorkingIndices = null;
+    
     state.originalIndices = [];
     state.originalData = [];
     
@@ -556,29 +563,72 @@ function applyOperation() {
         return;
     }
 
-    const result = operation.apply(state.originalIndices, state.originalData, param);
+    const sourceData = state.tempWorkingData || state.originalData;
+    const sourceIndices = state.tempWorkingIndices || state.originalIndices;
+
+    const result = operation.apply(sourceIndices, sourceData, param);
     state.outputData = result.data;
     state.outputIndices = result.indices;
     
+    state.tempWorkingData = [...result.data];
+    state.tempWorkingIndices = [...result.indices];
+    
     const currentSignalNotation = buildNotation(state.compositeSignals.length > 0 ? state.compositeSignals : [{notation: 'Unknown signal'}]);
-    const newNotation = operation.notation(currentSignalNotation, param);
+    
+    let stackedNotation = currentSignalNotation;
+    state.appliedOperations.forEach(op => {
+        stackedNotation = op.notation(stackedNotation, op.param);
+    });
+    const newNotation = operation.notation(stackedNotation, param);
     const operationDesc = operation.description(param);
+    
+    state.appliedOperations.push({
+        type: opType,
+        param: param,
+        notation: operation.notation,
+        description: operationDesc
+    });
     
     const allData = [...state.originalData, ...state.outputData];
     const allIndices = [...state.originalIndices, ...state.outputIndices];
     
     updateGlobalBounds(allData, allIndices);
     
-    const operationKey = `${currentSignalNotation}|${opType}|${param}`;
-    
-    if (state.lastOperationKey !== operationKey) {
-        state.operationHistory.push({
-            signal: newNotation,
-            operation: operationDesc
-        });
-        state.lastOperationKey = operationKey;
-        updateHistoryDisplay();
+    state.operationHistory.push({
+        signal: newNotation,
+        operation: operationDesc
+    });
+    updateHistoryDisplay();
+
+    createChart('originalChart', state.originalIndices, state.originalData, 'Original Signal: x[n]', 'original', state.globalXMin, state.globalXMax);
+    createChart('outputChart', state.outputIndices, state.outputData, 'Output Signal: y[n]', 'output', state.globalXMin, state.globalXMax);
+}
+
+function viewOperation() {
+    if (state.originalData.length === 0) {
+        alert('Please plot the original signal first!');
+        return;
     }
+
+    const opType = getValue('operationType', 'shift', (v) => v);
+    const param = getValue('paramValue', 0);
+    
+    const operation = OPERATION_CONFIG[opType];
+    if (!operation) return;
+    
+    if (opType === 'scale' && param === 0) {
+        alert('Scale factor cannot be 0!');
+        return;
+    }
+
+    const result = operation.apply(state.originalIndices, state.originalData, param);
+    state.outputData = result.data;
+    state.outputIndices = result.indices;
+    
+    const allData = [...state.originalData, ...state.outputData];
+    const allIndices = [...state.originalIndices, ...state.outputIndices];
+    
+    updateGlobalBounds(allData, allIndices);
 
     createChart('originalChart', state.originalIndices, state.originalData, 'Original Signal: x[n]', 'original', state.globalXMin, state.globalXMax);
     createChart('outputChart', state.outputIndices, state.outputData, 'Output Signal: y[n]', 'output', state.globalXMin, state.globalXMax);
@@ -591,11 +641,11 @@ function transferOutputToOriginal() {
     }
     
     const currentSignalNotation = buildNotation(state.compositeSignals.length > 0 ? state.compositeSignals : [{notation: 'Unknown signal'}]);
-    const opType = getValue('operationType', 'shift', (v) => v);
-    const param = getValue('paramValue', 0);
     
-    const operation = OPERATION_CONFIG[opType];
-    const newNotation = operation ? operation.notation(currentSignalNotation, param) : currentSignalNotation;
+    let finalNotation = currentSignalNotation;
+    state.appliedOperations.forEach(op => {
+        finalNotation = op.notation(finalNotation, op.param);
+    });
     
     state.transferredData = [...state.outputData];
     state.transferredIndices = [...state.outputIndices];
@@ -605,9 +655,13 @@ function transferOutputToOriginal() {
     state.compositeSignals = [{
         type: 'transferred',
         operation: '+',
-        notation: newNotation,
+        notation: finalNotation,
         isTransferred: true
     }];
+    
+    state.appliedOperations = [];
+    state.tempWorkingData = null;
+    state.tempWorkingIndices = null;
     
     updateCompositeDisplay();
     updateGlobalBounds(state.originalData, state.originalIndices);
