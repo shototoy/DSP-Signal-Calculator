@@ -199,10 +199,48 @@ function updateGlobalBounds(data, indices) {
 }
 
 function buildNotation(signals) {
-    return signals.map((signal, i) => {
-        if (i === 0) return signal.notation;
-        return signal.operation === '*' ? ` × ${signal.notation}` : ` ${signal.operation} ${signal.notation}`;
-    }).join('');
+    if (signals.length === 0) return '';
+    if (signals.length === 1) return signals[0].notation;
+    
+    let result = '';
+    let accumulatedAdditive = [];
+    
+    for (let i = 0; i < signals.length; i++) {
+        const signal = signals[i];
+        
+        if (signal.operation === '*') {
+            if (accumulatedAdditive.length > 0) {
+                const additiveStr = accumulatedAdditive.map((s, idx) => {
+                    if (idx === 0) return s.notation;
+                    return s.operation === '+' ? ` + ${s.notation}` : ` - ${s.notation}`;
+                }).join('');
+                
+                result += (result ? ' × ' : '') + `(${additiveStr})`;
+                accumulatedAdditive = [];
+            } else if (result) {
+                result = `(${result})`;
+            }
+            
+            result += ` × ${signal.notation}`;
+        } else {
+            accumulatedAdditive.push(signal);
+        }
+    }
+    
+    if (accumulatedAdditive.length > 0) {
+        const additiveStr = accumulatedAdditive.map((s, idx) => {
+            if (idx === 0 && !result) return s.notation;
+            return s.operation === '+' ? ` + ${s.notation}` : ` - ${s.notation}`;
+        }).join('');
+        
+        if (result) {
+            result += ` × (${additiveStr})`;
+        } else {
+            result = additiveStr;
+        }
+    }
+    
+    return result;
 }
 
 function toggleView() {
