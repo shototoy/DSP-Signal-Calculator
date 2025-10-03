@@ -348,23 +348,26 @@ function updateCompositeDisplay() {
 }
 
 function updateHistoryDisplay() {
-    const display = getElement('historyDisplay');
-    display.innerHTML = '';
+    const displays = document.querySelectorAll('.history-display');
     
-    if (state.operationHistory.length === 0) {
-        display.innerHTML = '<div class="history-empty">No operations applied yet</div>';
-        return;
-    }
-    
-    state.operationHistory.forEach((entry, index) => {
-        const historyBlock = document.createElement('div');
-        historyBlock.className = 'history-block';
-        historyBlock.innerHTML = `
-            <div class="step-label">Step ${index + 1}:</div>
-            <div class="signal-text">${entry.signal}</div>
-            <div class="operation-text">${entry.operation}</div>
-        `;
-        display.appendChild(historyBlock);
+    displays.forEach(display => {
+        display.innerHTML = '';
+        
+        if (state.operationHistory.length === 0) {
+            display.innerHTML = '<div class="history-empty">No operations applied yet</div>';
+            return;
+        }
+        
+        state.operationHistory.forEach((entry, index) => {
+            const historyBlock = document.createElement('div');
+            historyBlock.className = 'history-block';
+            historyBlock.innerHTML = `
+                <div class="step-label">Step ${index + 1}:</div>
+                <div class="signal-text">${entry.signal}</div>
+                <div class="operation-text">${entry.operation}</div>
+            `;
+            display.appendChild(historyBlock);
+        });
     });
 }
 
