@@ -643,6 +643,11 @@ function transferOutputToOriginal() {
         return;
     }
     
+    if (state.appliedOperations.length === 0) {
+        alert('No stacked operations to transfer! Use "Apply Operation" to stack operations before transferring.');
+        return;
+    }
+    
     const currentSignalNotation = buildNotation(state.compositeSignals.length > 0 ? state.compositeSignals : [{notation: 'Unknown signal'}]);
     
     let finalNotation = currentSignalNotation;
