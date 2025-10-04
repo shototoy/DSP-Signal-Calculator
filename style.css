@@ -8,19 +8,19 @@ body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     min-height: 100vh;
-    padding: 20px;
+    padding: 0;
     overflow-x: hidden;
 }
 
 .container {
-    max-width: 1800px;
-    margin: 0 auto;
+    max-width: 100%;
+    margin: 0;
     background: white;
-    border-radius: 15px;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-    padding: 30px;
-    min-height: calc(100vh - 10vh);
-    max-height: calc(100vh - 4vh);
+    border-radius: 0;
+    box-shadow: none;
+    padding: 12px;
+    min-height: 100vh;
+    max-height: 100vh;
     display: flex;
     flex-direction: column;
     position: relative;
@@ -29,23 +29,23 @@ body {
 h1 {
     text-align: center;
     color: #667eea;
-    margin-bottom: 10px;
-    font-size: 1.6em;
+    margin-bottom: 6px;
+    font-size: 1.4em;
     flex-shrink: 0;
 }
 
 .sidebar-toggle {
     display: none;
     position: fixed;
-    top: 2rem;
-    left: 2rem;
+    top: 1.5rem;
+    left: 1.5rem;
     z-index: 1001;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
     border: none;
-    padding: 12px 20px;
+    padding: 10px 16px;
     border-radius: 8px;
-    font-size: 16px;
+    font-size: 14px;
     font-weight: 600;
     cursor: pointer;
     box-shadow: 0 4px 10px rgba(0,0,0,0.2);
@@ -54,13 +54,13 @@ h1 {
 
 .view-toolbar {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    padding: 0.5rem;
-    border-radius: 10px;
-    margin-bottom: 0.5rem;
+    padding: 6px;
+    border-radius: 8px;
+    margin-bottom: 6px;
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 2rem;
+    gap: 1.5rem;
     flex-shrink: 0;
     box-shadow: 0 4px 10px rgba(0,0,0,0.15);
 }
@@ -68,14 +68,14 @@ h1 {
 .view-toolbar label {
     color: white;
     font-weight: 600;
-    font-size: 14px;
+    font-size: 13px;
 }
 
 .toggle-switch {
     position: relative;
     display: inline-block;
     width: 180px;
-    height: 40px;
+    height: 36px;
     margin-bottom: 0;
 }
 
@@ -98,11 +98,11 @@ h1 {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 15px;
+    padding: 0 12px;
 }
 
 .slider-label {
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 600;
     color: rgba(255, 255, 255, 0.7);
     transition: 0.4s;
@@ -126,10 +126,10 @@ h1 {
 .slider:before {
     position: absolute;
     content: "";
-    height: 32px;
+    height: 30px;
     width: 85px;
-    left: 4px;
-    bottom: 4px;
+    left: 3px;
+    bottom: 3px;
     background-color: white;
     transition: 0.4s;
     border-radius: 20px;
@@ -143,7 +143,7 @@ input:checked + .slider:before {
 .main-grid {
     display: grid;
     grid-template-columns: 380px 1fr 300px;
-    gap: 20px;
+    gap: 10px;
     flex: 1;
     min-height: 0;
 }
@@ -151,14 +151,14 @@ input:checked + .slider:before {
 .left-panel {
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    gap: 8px;
     overflow-y: auto;
     overflow-x: hidden;
-    padding-right: 10px;
+    padding-right: 6px;
 }
 
 .left-panel::-webkit-scrollbar {
-    width: 8px;
+    width: 6px;
 }
 
 .left-panel::-webkit-scrollbar-track {
@@ -174,7 +174,7 @@ input:checked + .slider:before {
 .middle-panel {
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    gap: 8px;
     min-height: 0;
     overflow: hidden;
 }
@@ -182,14 +182,14 @@ input:checked + .slider:before {
 .right-panel {
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    gap: 8px;
     overflow-y: auto;
     overflow-x: hidden;
-    padding-right: 10px;
+    padding-right: 6px;
 }
 
 .right-panel::-webkit-scrollbar {
-    width: 8px;
+    width: 6px;
 }
 
 .right-panel::-webkit-scrollbar-track {
@@ -204,8 +204,8 @@ input:checked + .slider:before {
 
 .history-panel {
     background: #f8f9fa;
-    padding: 15px;
-    border-radius: 10px;
+    padding: 10px;
+    border-radius: 8px;
     border-left: 4px solid #28a745;
     flex: 1;
     display: flex;
@@ -216,14 +216,14 @@ input:checked + .slider:before {
 
 .history-panel h3 {
     color: #28a745;
-    margin-bottom: 10px;
-    font-size: 1em;
+    margin-bottom: 6px;
+    font-size: 0.95em;
     flex-shrink: 0;
 }
 
 .history-content {
     background: white;
-    padding: 12px;
+    padding: 8px;
     border-radius: 5px;
     flex: 1;
     overflow-y: auto;
@@ -238,29 +238,28 @@ input:checked + .slider:before {
 
 .info {
     background: #d1ecf1;
-    padding: 12px;
+    padding: 8px;
     border-radius: 5px;
     border-left: 4px solid #17a2b8;
-    font-size: 13px;
+    font-size: 12px;
     flex-shrink: 0;
-    margin-top: 1rem;
 }
 
 .signal-buttons {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
+    gap: 8px;
 }
 
 .signal-btn {
-    padding: 12px;
+    padding: 8px;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
     border: none;
-    border-radius: 8px;
+    border-radius: 6px;
     cursor: pointer;
     font-weight: 600;
-    font-size: 13px;
+    font-size: 12px;
     transition: all 0.3s;
     box-shadow: 0 4px 6px rgba(0,0,0,0.1);
 }
@@ -276,44 +275,43 @@ input:checked + .slider:before {
 
 .function-display {
     background: #f8f9fa;
-    padding: 0.5rem;
-    border-radius: 10px;
+    padding: 8px;
+    border-radius: 8px;
     border-left: 4px solid #667eea;
     flex-shrink: 0;
 }
 
 .function-display h3 {
     color: #667eea;
-    margin-bottom: 10px;
-    font-size: 1em;
-    padding: 0.5rem 1rem;
+    margin-bottom: 6px;
+    font-size: 0.95em;
+    padding: 0 4px;
 }
 
 .function-text {
-    font-size: 1.5rem;
+    font-size: 1.3rem;
     font-weight: 600;
     color: #495057;
     background: white;
-    padding: 12px;
+    padding: 8px;
     border-radius: 5px;
     word-wrap: break-word;
     font-family: 'Courier New', monospace;
-    min-height: 45px;
-    max-height: 120px;
+    min-height: 40px;
+    max-height: 100px;
     overflow-x: auto;
 }
-
 
 .storage-display {   
     background: white;
     border-radius: 5px;
-    margin-bottom: 12px;
+    margin-bottom: 8px;
     overflow-y: auto;
     font-family: 'Courier New', monospace;
 }
 
 .storage-display::-webkit-scrollbar {
-    width: 6px;
+    width: 5px;
 }
 
 .storage-display::-webkit-scrollbar-track {
@@ -329,15 +327,15 @@ input:checked + .slider:before {
 .storage-empty {
     color: #6c757d;
     font-style: italic;
-    padding: 0.5rem;
-    font-size: 13px;
+    padding: 6px;
+    font-size: 12px;
 }
 
 .storage-item {
     background: #e7f3ff;
-    padding: 10px;
+    padding: 7px;
     border-radius: 5px;
-    margin-bottom: 8px;
+    margin-bottom: 6px;
     border-left: 3px solid #007bff;
     cursor: pointer;
     transition: all 0.2s;
@@ -349,15 +347,15 @@ input:checked + .slider:before {
 }
 
 .storage-item-label {
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 700;
     color: #007bff;
     text-transform: uppercase;
-    margin-bottom: 4px;
+    margin-bottom: 3px;
 }
 
 .storage-item-notation {
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 600;
     color: #495057;
     font-family: 'Courier New', monospace;
@@ -367,18 +365,19 @@ input:checked + .slider:before {
 .storage-buttons {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 10px; margin-top: 0.25rem;
+    gap: 8px;
+    margin-top: 6px;
 }
 
 .btn-store {
-    padding: 10px;
+    padding: 8px;
     background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
     color: white;
     border: none;
     border-radius: 5px;
     cursor: pointer;
     font-weight: 600;
-    font-size: 13px;
+    font-size: 12px;
     transition: transform 0.2s;
 }
 
@@ -387,14 +386,14 @@ input:checked + .slider:before {
 }
 
 .btn-clear-storage {
-    padding: 10px;
+    padding: 8px;
     background: #dc3545;
     color: white;
     border: none;
     border-radius: 5px;
     cursor: pointer;
     font-weight: 600;
-    font-size: 13px;
+    font-size: 12px;
     transition: transform 0.2s;
 }
 
@@ -402,24 +401,8 @@ input:checked + .slider:before {
     transform: translateY(-2px);
 }
 
-.history-panel h3 {
-    color: #28a745;
-    margin-bottom: 10px;
-    font-size: 1em;
-    flex-shrink: 0;
-}
-
-.history-content {
-    background: white;
-    padding: 12px;
-    border-radius: 5px;
-    flex: 1;
-    overflow-y: auto;
-    min-height: 0;
-}
-
 .history-content::-webkit-scrollbar {
-    width: 6px;
+    width: 5px;
 }
 
 .history-content::-webkit-scrollbar-track {
@@ -436,16 +419,16 @@ input:checked + .slider:before {
     color: #6c757d;
     font-style: italic;
     text-align: center;
-    padding: 20px 10px;
-    font-size: 13px;
+    padding: 12px 8px;
+    font-size: 12px;
 }
 
 .history-block {
     background: #e8f5e9;
-    padding: 10px;
+    padding: 7px;
     border-radius: 5px;
     border-left: 3px solid #28a745;
-    margin-bottom: 10px;
+    margin-bottom: 7px;
 }
 
 .history-block:last-child {
@@ -453,24 +436,24 @@ input:checked + .slider:before {
 }
 
 .step-label {
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 700;
     color: #28a745;
     text-transform: uppercase;
-    margin-bottom: 4px;
+    margin-bottom: 3px;
 }
 
 .signal-text {
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 600;
     color: #495057;
-    margin-bottom: 4px;
+    margin-bottom: 3px;
     word-wrap: break-word;
     font-family: 'Courier New', monospace;
 }
 
 .operation-text {
-    font-size: 12px;
+    font-size: 11px;
     color: #6c757d;
     font-style: italic;
 }
@@ -478,52 +461,13 @@ input:checked + .slider:before {
 .action-buttons {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 10px;
-    margin-top: 12px;
+    gap: 8px;
+    margin-top: 8px;
 }
 
 .btn-primary {
-    padding: 10px;
-    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-weight: 600;
-    font-size: 13px;
-    transition: transform 0.2s;
-}
-
-.btn-secondary {
-    padding: 10px;
-    background: #6c757d;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-weight: 600;
-    font-size: 13px;
-    transition: transform 0.2s;
-}
-
-.btn-transfer {
-    padding: 12px;
-    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-weight: 600;
-    font-size: 14px;
-    transition: transform 0.2s;
-    width: 100%;
-    flex-shrink: 0;
-    margin-top: 0.25rem;
-}
-
-.btn-clear-history {
     padding: 8px;
-    background: #dc3545;
+    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
     color: white;
     border: none;
     border-radius: 5px;
@@ -531,7 +475,46 @@ input:checked + .slider:before {
     font-weight: 600;
     font-size: 12px;
     transition: transform 0.2s;
-    margin-top: 10px;
+}
+
+.btn-secondary {
+    padding: 8px;
+    background: #6c757d;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 12px;
+    transition: transform 0.2s;
+}
+
+.btn-transfer {
+    padding: 9px;
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 12px;
+    transition: transform 0.2s;
+    width: 100%;
+    flex-shrink: 0;
+    margin-top: 6px;
+}
+
+.btn-clear-history {
+    padding: 7px;
+    background: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 11px;
+    transition: transform 0.2s;
+    margin-top: 6px;
     flex-shrink: 0;
 }
 
@@ -559,10 +542,10 @@ input:checked + .slider:before {
 
 .modal-content {
     background: white;
-    padding: 30px;
-    border-radius: 15px;
+    padding: 20px;
+    border-radius: 12px;
     width: 90%;
-    max-width: 600px;
+    max-width: 550px;
     max-height: 90vh;
     overflow-y: auto;
     animation: slideIn 0.3s;
@@ -583,19 +566,19 @@ input:checked + .slider:before {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
-    padding-bottom: 15px;
+    margin-bottom: 15px;
+    padding-bottom: 12px;
     border-bottom: 2px solid #e9ecef;
 }
 
 .modal-header h2 {
     color: #667eea;
     margin: 0;
-    font-size: 1.3em;
+    font-size: 1.2em;
 }
 
 .close {
-    font-size: 28px;
+    font-size: 26px;
     font-weight: bold;
     cursor: pointer;
     color: #aaa;
@@ -608,23 +591,23 @@ input:checked + .slider:before {
 }
 
 .input-group {
-    margin-bottom: 15px;
+    margin-bottom: 10px;
 }
 
 label {
     display: block;
-    margin-bottom: 5px;
+    margin-bottom: 4px;
     font-weight: 600;
     color: #333;
-    font-size: 13px;
+    font-size: 12px;
 }
 
 input, select {
     width: 100%;
-    padding: 8px;
+    padding: 6px 8px;
     border: 2px solid #ddd;
     border-radius: 5px;
-    font-size: 13px;
+    font-size: 12px;
     transition: border-color 0.3s;
 }
 
@@ -636,34 +619,34 @@ input:focus, select:focus {
 .param-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 10px;
+    gap: 8px;
 }
 
 .modal-buttons {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 10px;
-    margin-top: 20px;
+    gap: 8px;
+    margin-top: 15px;
 }
 
 .operation-section {
     background: #fff3cd;
-    padding: 15px;
-    border-radius: 10px;
+    padding: 10px;
+    border-radius: 8px;
     border-left: 4px solid #ffc107;
     flex-shrink: 0;
 }
 
 .operation-section h3 {
-    margin-bottom: 12px;
+    margin-bottom: 8px;
     color: #856404;
-    font-size: 1em;
+    font-size: 0.95em;
 }
 
 .chart-wrapper {
     background: #f8f9fa;
-    padding: 15px;
-    border-radius: 10px;
+    padding: 8px;
+    border-radius: 8px;
     box-shadow: 0 4px 6px rgba(0,0,0,0.1);
     flex: 1;
     min-height: 0;
@@ -675,8 +658,8 @@ input:focus, select:focus {
     text-align: center;
     font-weight: 600;
     color: #667eea;
-    margin-bottom: 10px;
-    font-size: 1em;
+    margin-bottom: 6px;
+    font-size: 0.95em;
     flex-shrink: 0;
 }
 
@@ -720,7 +703,7 @@ input:focus, select:focus {
         z-index: 1000;
         transition: left 0.3s ease;
         box-shadow: 2px 0 10px rgba(0,0,0,0.1);
-        padding: 80px 20px 20px 20px;
+        padding: 70px 15px 15px 15px;
     }
 
     .left-panel.show {
@@ -738,8 +721,8 @@ input:focus, select:focus {
     .history-panel-bottom {
         display: flex;
         flex: 0;
-        min-height: 250px;
-        max-height: 400px;
+        min-height: 220px;
+        max-height: 350px;
     }
 
     .signal-buttons {
@@ -748,6 +731,14 @@ input:focus, select:focus {
 }
 
 @media (max-width: 768px) {
+    body {
+        padding: 6px;
+    }
+    
+    .container {
+        padding: 10px;
+    }
+    
     .left-panel {
         width: 100%;
     }
@@ -761,9 +752,10 @@ input:focus, select:focus {
     }
 
     .chart-wrapper {
-        min-height: 300px;
+        min-height: 250px;
     }
 }
+
 .convolution-mode .chart-container {
     position: static;
     display: block;
@@ -772,7 +764,7 @@ input:focus, select:focus {
 .conv-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 15px;
+    gap: 10px;
     width: 100%;
     height: 100%;
 }
@@ -781,16 +773,16 @@ input:focus, select:focus {
     display: flex;
     flex-direction: column;
     position: relative;
-    min-height: 250px;
+    min-height: 220px;
 }
 
 .conv-chart-label {
     font-weight: 600;
-    font-size: 14px;
+    font-size: 12px;
     color: #495057;
-    margin-bottom: 8px;
+    margin-bottom: 6px;
     text-align: center;
-    padding: 8px;
+    padding: 6px;
     background: #f8f9fa;
     border-radius: 4px;
     flex-shrink: 0;
@@ -798,10 +790,29 @@ input:focus, select:focus {
 
 .conv-chart-item canvas {
     position: absolute !important;
-    top: 40px !important;
+    top: 34px !important;
     left: 0 !important;
     right: 0 !important;
     bottom: 0 !important;
     width: 100% !important;
-    height: calc(100% - 40px) !important;
+    height: calc(100% - 34px) !important;
+}
+
+.operation-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.operation-info {
+    margin-top: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.operation-info small {
+    font-size: 11px;
+    color: #6c757d;
 }
