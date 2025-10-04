@@ -1064,6 +1064,9 @@ function createChart(canvasId, indices, data, title, type, forceXMin = null, for
     const bgColor = type === 'original' ? 'rgba(102, 126, 234, 0.7)' : 'rgba(240, 147, 251, 0.7)';
     const fillColor = type === 'original' ? 'rgba(102, 126, 234, 0.1)' : 'rgba(240, 147, 251, 0.1)';
 
+    // Check if mobile view
+    const isMobile = window.innerWidth <= 1200;
+    
     const datasets = state.isDiscreteView ? [
         {
             type: 'bar',
@@ -1077,10 +1080,10 @@ function createChart(canvasId, indices, data, title, type, forceXMin = null, for
         {
             type: 'scatter',
             data: chartData,
-            pointRadius: 5,
+            pointRadius: isMobile ? 4 : 5,
             pointBackgroundColor: color,
             pointBorderColor: '#fff',
-            pointBorderWidth: 2,
+            pointBorderWidth: isMobile ? 1.5 : 2,
             order: 1
         }
     ] : [
@@ -1090,11 +1093,11 @@ function createChart(canvasId, indices, data, title, type, forceXMin = null, for
             showLine: true,
             borderColor: color,
             backgroundColor: fillColor,
-            borderWidth: 2,
-            pointRadius: 5,
+            borderWidth: isMobile ? 1.5 : 2,
+            pointRadius: isMobile ? 4 : 5,
             pointBackgroundColor: color,
             pointBorderColor: '#fff',
-            pointBorderWidth: 2,
+            pointBorderWidth: isMobile ? 1.5 : 2,
             tension: 0
         }
     ];
@@ -1108,6 +1111,14 @@ function createChart(canvasId, indices, data, title, type, forceXMin = null, for
         options: {
             responsive: true,
             maintainAspectRatio: true,
+            layout: {
+                padding: {
+                    left: isMobile ? 0 : 5,
+                    right: isMobile ? 0 : 5,
+                    top: isMobile ? 5 : 10,
+                    bottom: isMobile ? 0 : 5
+                }
+            },
             plugins: {
                 legend: { display: false }
             },
@@ -1119,15 +1130,26 @@ function createChart(canvasId, indices, data, title, type, forceXMin = null, for
                     title: {
                         display: true,
                         text: 'n (sample index)',
-                        font: { weight: 'bold', size: 14 }
+                        font: { 
+                            weight: 'bold', 
+                            size: isMobile ? 11 : 14 
+                        },
+                        padding: { top: isMobile ? 2 : 4 }
                     },
                     grid: {
                         color: (ctx) => Math.abs(ctx.tick?.value || 1) < 0.001 ? 'rgba(0, 0, 0, 0.8)' : 'rgba(0,0,0,0.08)',
-                        lineWidth: (ctx) => Math.abs(ctx.tick?.value || 1) < 0.001 ? 3 : 1,
+                        lineWidth: (ctx) => Math.abs(ctx.tick?.value || 1) < 0.001 ? 2 : 1,
                         drawBorder: true
                     },
                     ticks: {
-                        font: { size: 15, weight: '600' }
+                        font: { 
+                            size: isMobile ? 10 : 15, 
+                            weight: '600' 
+                        },
+                        maxRotation: 0,
+                        autoSkip: true,
+                        autoSkipPadding: isMobile ? 5 : 10,
+                        padding: isMobile ? 2 : 5
                     }
                 },
                 y: {
@@ -1136,15 +1158,24 @@ function createChart(canvasId, indices, data, title, type, forceXMin = null, for
                     title: {
                         display: true,
                         text: 'Amplitude',
-                        font: { weight: 'bold', size: 14 }
+                        font: { 
+                            weight: 'bold', 
+                            size: isMobile ? 11 : 14 
+                        },
+                        padding: { bottom: isMobile ? 2 : 4 }
                     },
                     grid: {
                         color: (ctx) => Math.abs(ctx.tick?.value || 1) < 0.001 ? 'rgba(0, 0, 0, 0.8)' : 'rgba(0,0,0,0.08)',
-                        lineWidth: (ctx) => Math.abs(ctx.tick?.value || 1) < 0.001 ? 3 : 1,
+                        lineWidth: (ctx) => Math.abs(ctx.tick?.value || 1) < 0.001 ? 2 : 1,
                         drawBorder: true
                     },
                     ticks: {
-                        font: { size: 15, weight: '600' }
+                        font: { 
+                            size: isMobile ? 10 : 15, 
+                            weight: '600' 
+                        },
+                        maxTicksLimit: isMobile ? 6 : 8,
+                        padding: isMobile ? 2 : 5
                     }
                 }
             }
@@ -1187,4 +1218,19 @@ document.addEventListener('click', function(event) {
             drawer.classList.remove('expanded');
         }
     }
+});
+
+let resizeTimeout;
+window.addEventListener('resize', function() {
+    clearTimeout(resizeTimeout);
+    resizeTimeout = setTimeout(function() {
+        if (state.originalChart && state.originalData.length > 0) {
+            createChart('originalChart', state.originalIndices, state.originalData, 
+                'Original Signal: x[n]', 'original', state.globalXMin, state.globalXMax);
+        }
+        if (state.outputChart && state.outputData.length > 0) {
+            createChart('outputChart', state.outputIndices, state.outputData, 
+                'Output Signal: y[n]', 'output', state.globalXMin, state.globalXMax);
+        }
+    }, 250);
 });
