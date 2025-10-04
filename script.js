@@ -696,12 +696,14 @@ function updateChartLayout(isConvolution) {
         originalChartContainer.innerHTML = `
             <div class="conv-grid">
                 <div class="conv-chart-item">
-                    <div class="conv-chart-label">Signal 1: x[n]</div>
+                    
                     <canvas id="convChart1"></canvas>
+                    <div class="conv-chart-label">Signal 1: x[n]</div>
                 </div>
                 <div class="conv-chart-item">
-                    <div class="conv-chart-label">Signal 2: h[n]</div>
+                    
                     <canvas id="convChart2"></canvas>
+                    <div class="conv-chart-label">Signal 2: h[n]</div>
                 </div>
             </div>
         `;

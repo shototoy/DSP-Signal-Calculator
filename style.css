@@ -724,6 +724,10 @@ input:focus, select:focus {
     flex-direction: column;
 }
 
+.convolution-mode ~ .chart-wrapper {
+    flex: 0.6;
+}
+
 .chart-title {
     text-align: center;
     font-weight: 600;
@@ -745,158 +749,6 @@ input:focus, select:focus {
     left: 0;
     width: 100% !important;
     height: 100% !important;
-}
-
-/* Responsive Design */
-@media (max-width: 1400px) {
-    .main-grid {
-        grid-template-columns: 350px 1fr 280px;
-    }
-}
-
-@media (max-width: 1200px) {
-    .sidebar-toggle {
-        display: block;
-    }
-
-    .main-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .left-panel {
-        position: fixed;
-        left: -100%;
-        top: 0;
-        width: 380px;
-        height: 100vh;
-        background: white;
-        z-index: 1000;
-        transition: left 0.3s ease;
-        box-shadow: 2px 0 10px rgba(0,0,0,0.1);
-        padding: 70px 15px 15px 15px;
-    }
-
-    .left-panel.show {
-        left: 0;
-    }
-
-    .middle-panel {
-        grid-column: 1;
-        gap: 6px;
-    }
-
-    .right-panel {
-        display: none;
-    }
-
-    .history-panel-bottom {
-        display: flex;
-        flex: 0;
-        min-height: 220px;
-        max-height: 350px;
-    }
-
-    .signal-buttons {
-        grid-template-columns: repeat(3, 1fr);
-    }
-
-    .chart-wrapper {
-        padding: 4px;
-        min-height: 200px;
-    }
-    
-    .chart-title {
-        margin-bottom: 2px;
-        font-size: 0.85em;
-        padding: 2px 0;
-    }
-    
-    .view-toolbar {
-        padding: 4px;
-        margin-bottom: 4px;
-    }
-
-    .conv-grid {
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
-        width: 100%;
-        height: 100%;
-    }
-    
-    .conv-chart-item {
-        display: flex;
-        flex-direction: column;
-        position: relative;
-        min-height: 140px;
-        flex: 1;
-    }
-    
-    .conv-chart-label {
-        font-weight: 600;
-        font-size: 11px;
-        color: #495057;
-        margin-bottom: 4px;
-        text-align: center;
-        padding: 4px;
-        background: #f8f9fa;
-        border-radius: 4px;
-        flex-shrink: 0;
-    }
-    
-    .conv-chart-item canvas {
-        position: absolute !important;
-        top: 28px !important;
-        left: 0 !important;
-        right: 0 !important;
-        bottom: 0 !important;
-        width: 100% !important;
-        height: calc(100% - 28px) !important;
-    }
-}
-
-@media (max-width: 768px) {
-    body {
-        padding: 6px;
-    }
-    
-    .container {
-        padding: 10px;
-    }
-    
-    .left-panel {
-        width: 100%;
-    }
-
-    .signal-buttons {
-        grid-template-columns: repeat(2, 1fr);
-    }
-    
-    .param-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .chart-wrapper {
-        padding: 3px;
-        min-height: 180px;
-    }
-    .chart-title {
-        font-size: 0.8em;
-        margin-bottom: 1px;
-    }
-    .chart-wrapper {
-        padding: 3px;
-        min-height: 180px;
-    }
-    
-    .chart-title {
-        font-size: 0.8em;
-        margin-bottom: 1px;
-    }
-    
-    .conv-chart-item {
-        min-height: 130px;
-    }
 }
 
 .convolution-mode .chart-container {
@@ -958,4 +810,141 @@ input:focus, select:focus {
 .operation-info small {
     font-size: 11px;
     color: #6c757d;
+}
+
+@media (max-width: 1400px) {
+    .main-grid {
+        grid-template-columns: 350px 1fr 280px;
+    }
+}
+
+@media (max-width: 1200px) {
+    .sidebar-toggle {
+        display: block;
+    }
+
+    .main-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .left-panel {
+        position: fixed;
+        left: -100%;
+        top: 0;
+        width: 380px;
+        height: 100vh;
+        background: white;
+        z-index: 1000;
+        transition: left 0.3s ease;
+        box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+        padding: 70px 15px 15px 15px;
+    }
+
+    .left-panel.show {
+        left: 0;
+    }
+
+    .middle-panel {
+        grid-column: 1;
+        gap: 6px;
+    }
+
+    .right-panel {
+        display: none;
+    }
+
+    .history-panel-bottom {
+        display: flex;
+        flex: 0;
+        min-height: 220px;
+        max-height: 350px;
+    }
+
+    .signal-buttons {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .chart-wrapper {
+        padding: 4px;
+        min-height: 200px;
+    }
+    
+    .convolution-mode ~ .chart-wrapper {
+        flex: 0.7;
+        min-height: 150px;
+    }
+
+    .chart-title {
+        margin-bottom: 2px;
+        font-size: 0.85em;
+        padding: 2px 0;
+    }
+    
+    .view-toolbar {
+        padding: 4px;
+        margin-bottom: 4px;
+    }
+
+    .conv-grid {
+        display: grid !important;
+        grid-template-columns: 1fr !important;
+        grid-template-rows: 1fr 1fr !important;
+        gap: 6px !important;
+    }
+    
+    .conv-chart-item {
+        min-height: 140px !important;
+    }
+    
+    .conv-chart-label {
+        font-size: 11px !important;
+        padding: 4px !important;
+        margin-bottom: 4px !important;
+    }
+    
+    .conv-chart-item canvas {
+        top: 28px !important;
+        height: calc(100% - 28px) !important;
+    }
+}
+
+@media (max-width: 768px) {
+    body {
+        padding: 6px;
+    }
+    
+    .container {
+        padding: 10px;
+    }
+    
+    .left-panel {
+        width: 100%;
+    }
+
+    .signal-buttons {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .param-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .chart-wrapper {
+        padding: 3px;
+        min-height: 180px;
+    }
+    
+    .convolution-mode ~ .chart-wrapper {
+        flex: 0.6;
+        min-height: 130px;
+    }
+
+    .chart-title {
+        font-size: 0.8em;
+        margin-bottom: 1px;
+    }
+    
+    .conv-chart-item {
+        min-height: 130px !important;
+    }
 }
