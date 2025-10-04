@@ -1029,6 +1029,7 @@ function transferOutputToOriginal() {
     
     createChart('originalChart', state.originalIndices, state.originalData, 'Original Signal: x[n]', 'original', state.globalXMin, state.globalXMax);
 }
+
 function createChart(canvasId, indices, data, title, type, forceXMin = null, forceXMax = null) {
     const canvas = getElement(canvasId);
     if (!canvas) return;
@@ -1049,12 +1050,12 @@ function createChart(canvasId, indices, data, title, type, forceXMin = null, for
     const minIndex = forceXMin !== null ? forceXMin : Math.min(...indices);
     const maxIndex = forceXMax !== null ? forceXMax : Math.max(...indices);
     const xRange = maxIndex - minIndex;
-    const xPadding = xRange * 0.05 || 1;
+    const xPadding = xRange * 0.02 || 0.5;
     
     const yMin = state.globalYMin !== null ? state.globalYMin : Math.min(...data);
     const yMax = state.globalYMax !== null ? state.globalYMax : Math.max(...data);
     const yRange = yMax - yMin;
-    const yPadding = yRange * 0.15 || 1;
+    const yPadding = yRange * 0.08 || 0.5;
     
     const actualXMin = minIndex - xPadding;
     const actualXMax = maxIndex + xPadding;
@@ -1064,7 +1065,6 @@ function createChart(canvasId, indices, data, title, type, forceXMin = null, for
     const bgColor = type === 'original' ? 'rgba(102, 126, 234, 0.7)' : 'rgba(240, 147, 251, 0.7)';
     const fillColor = type === 'original' ? 'rgba(102, 126, 234, 0.1)' : 'rgba(240, 147, 251, 0.1)';
 
-    // Check if mobile view
     const isMobile = window.innerWidth <= 1200;
     
     const datasets = state.isDiscreteView ? [
@@ -1080,10 +1080,10 @@ function createChart(canvasId, indices, data, title, type, forceXMin = null, for
         {
             type: 'scatter',
             data: chartData,
-            pointRadius: isMobile ? 4 : 5,
+            pointRadius: isMobile ? 3.5 : 5,
             pointBackgroundColor: color,
             pointBorderColor: '#fff',
-            pointBorderWidth: isMobile ? 1.5 : 2,
+            pointBorderWidth: isMobile ? 1 : 2,
             order: 1
         }
     ] : [
@@ -1094,10 +1094,10 @@ function createChart(canvasId, indices, data, title, type, forceXMin = null, for
             borderColor: color,
             backgroundColor: fillColor,
             borderWidth: isMobile ? 1.5 : 2,
-            pointRadius: isMobile ? 4 : 5,
+            pointRadius: isMobile ? 3.5 : 5,
             pointBackgroundColor: color,
             pointBorderColor: '#fff',
-            pointBorderWidth: isMobile ? 1.5 : 2,
+            pointBorderWidth: isMobile ? 1 : 2,
             tension: 0
         }
     ];
@@ -1113,14 +1113,21 @@ function createChart(canvasId, indices, data, title, type, forceXMin = null, for
             maintainAspectRatio: true,
             layout: {
                 padding: {
-                    left: isMobile ? 0 : 5,
-                    right: isMobile ? 0 : 5,
-                    top: isMobile ? 5 : 10,
-                    bottom: isMobile ? 0 : 5
+                    left: 0,
+                    right: isMobile ? 2 : 5,
+                    top: isMobile ? 2 : 5,
+                    bottom: 0
                 }
             },
             plugins: {
-                legend: { display: false }
+                legend: { display: false },
+                tooltip: {
+                    enabled: true,
+                    backgroundColor: 'rgba(0,0,0,0.8)',
+                    padding: isMobile ? 6 : 10,
+                    titleFont: { size: isMobile ? 11 : 12 },
+                    bodyFont: { size: isMobile ? 10 : 11 }
+                }
             },
             scales: {
                 x: {
@@ -1128,54 +1135,61 @@ function createChart(canvasId, indices, data, title, type, forceXMin = null, for
                     min: actualXMin,
                     max: actualXMax,
                     title: {
-                        display: true,
+                        display: !isMobile,
                         text: 'n (sample index)',
                         font: { 
                             weight: 'bold', 
-                            size: isMobile ? 11 : 14 
+                            size: 12
                         },
-                        padding: { top: isMobile ? 2 : 4 }
+                        padding: { top: 2 }
                     },
                     grid: {
-                        color: (ctx) => Math.abs(ctx.tick?.value || 1) < 0.001 ? 'rgba(0, 0, 0, 0.8)' : 'rgba(0,0,0,0.08)',
+                        display: true,
+                        color: (ctx) => Math.abs(ctx.tick?.value || 1) < 0.001 ? 'rgba(0, 0, 0, 0.6)' : 'rgba(0,0,0,0.06)',
                         lineWidth: (ctx) => Math.abs(ctx.tick?.value || 1) < 0.001 ? 2 : 1,
-                        drawBorder: true
+                        drawBorder: true,
+                        drawTicks: true,
+                        tickLength: isMobile ? 3 : 5
                     },
                     ticks: {
                         font: { 
-                            size: isMobile ? 10 : 15, 
-                            weight: '600' 
+                            size: isMobile ? 9 : 13, 
+                            weight: '500' 
                         },
                         maxRotation: 0,
                         autoSkip: true,
-                        autoSkipPadding: isMobile ? 5 : 10,
-                        padding: isMobile ? 2 : 5
+                        autoSkipPadding: isMobile ? 8 : 15,
+                        padding: isMobile ? 1 : 3,
+                        maxTicksLimit: isMobile ? 8 : 10
                     }
                 },
                 y: {
                     min: yMin - yPadding,
                     max: yMax + yPadding,
                     title: {
-                        display: true,
+                        display: !isMobile,
                         text: 'Amplitude',
                         font: { 
                             weight: 'bold', 
-                            size: isMobile ? 11 : 14 
+                            size: 12
                         },
-                        padding: { bottom: isMobile ? 2 : 4 }
+                        padding: { bottom: 2 }
                     },
                     grid: {
-                        color: (ctx) => Math.abs(ctx.tick?.value || 1) < 0.001 ? 'rgba(0, 0, 0, 0.8)' : 'rgba(0,0,0,0.08)',
+                        display: true,
+                        color: (ctx) => Math.abs(ctx.tick?.value || 1) < 0.001 ? 'rgba(0, 0, 0, 0.6)' : 'rgba(0,0,0,0.06)',
                         lineWidth: (ctx) => Math.abs(ctx.tick?.value || 1) < 0.001 ? 2 : 1,
-                        drawBorder: true
+                        drawBorder: true,
+                        drawTicks: true,
+                        tickLength: isMobile ? 3 : 5
                     },
                     ticks: {
                         font: { 
-                            size: isMobile ? 10 : 15, 
-                            weight: '600' 
+                            size: isMobile ? 9 : 13, 
+                            weight: '500' 
                         },
-                        maxTicksLimit: isMobile ? 6 : 8,
-                        padding: isMobile ? 2 : 5
+                        maxTicksLimit: isMobile ? 5 : 7,
+                        padding: isMobile ? 1 : 3
                     }
                 }
             }
@@ -1231,6 +1245,20 @@ window.addEventListener('resize', function() {
         if (state.outputChart && state.outputData.length > 0) {
             createChart('outputChart', state.outputIndices, state.outputData, 
                 'Output Signal: y[n]', 'output', state.globalXMin, state.globalXMax);
+        }
+        if (state.convChart1) {
+            const signal1Value = getValue('convSignal1', 'current', (v) => v);
+            if (signal1Value === 'current') {
+                createChart('convChart1', state.originalIndices, state.originalData, 
+                    'Signal 1: x[n]', 'original', state.globalXMin, state.globalXMax);
+            }
+        }
+        if (state.convChart2) {
+            const signal2Value = getValue('convSignal2', 'current', (v) => v);
+            if (signal2Value === 'current') {
+                createChart('convChart2', state.originalIndices, state.originalData, 
+                    'Signal 2: h[n]', 'original', state.globalXMin, state.globalXMax);
+            }
         }
     }, 250);
 });

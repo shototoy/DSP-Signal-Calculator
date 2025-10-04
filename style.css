@@ -782,6 +782,7 @@ input:focus, select:focus {
 
     .middle-panel {
         grid-column: 1;
+        gap: 6px;
     }
 
     .right-panel {
@@ -797,6 +798,22 @@ input:focus, select:focus {
 
     .signal-buttons {
         grid-template-columns: repeat(3, 1fr);
+    }
+
+    .chart-wrapper {
+        padding: 4px;
+        min-height: 200px;
+    }
+    
+    .chart-title {
+        margin-bottom: 2px;
+        font-size: 0.85em;
+        padding: 2px 0;
+    }
+    
+    .view-toolbar {
+        padding: 4px;
+        margin-bottom: 4px;
     }
 }
 
@@ -822,7 +839,12 @@ input:focus, select:focus {
     }
 
     .chart-wrapper {
-        min-height: 250px;
+        padding: 3px;
+        min-height: 180px;
+    }
+    .chart-title {
+        font-size: 0.8em;
+        margin-bottom: 1px;
     }
 }
 
