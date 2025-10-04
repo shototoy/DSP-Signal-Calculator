@@ -9,8 +9,6 @@
 </head>
 <body>
     <div class="container">
-        <h1>DSP Signal Calculator</h1>
-        
         <button class="sidebar-toggle" onclick="toggleSidebar()">☰ Controls</button>
         
         <div class="main-grid">
@@ -45,6 +43,9 @@
                         <button class="btn-store" onclick="storeCurrentSignal()">💾 Store</button>
                         <button class="btn-clear-storage" onclick="clearStoredSignals()">🗑️ Memory Clear</button>
                     </div>
+                    <button class="btn-transfer" onclick="transferOutputToOriginal()">
+                        🔄 Use Output as Original Signal
+                    </button>
                 </div>
 
 
@@ -57,17 +58,18 @@
                 </div>
 
                 <div class="operation-section">
-                    <h3>Apply Operation:</h3>
+                    <h3>Operations:</h3>
                     
                     <div class="input-group">
                         <label>Operation Type:</label>
-                        <select id="operationType">
+                        <select id="operationType" onchange="updateConvolutionUI()">
                             <option value="shift">Time Shift: x[n - k]</option>
                             <option value="scale">Time Scale: x[an]</option>
                             <option value="fold">Time Folding: x[-n]</option>
                             <option value="add">Addition: x[n] + c</option>
                             <option value="multiply">Multiplication: x[n] × c</option>
                             <option value="reverse">Reverse Sequence</option>
+                            <option value="convolve">Convolution: x[n] * h[n]</option>
                         </select>
                     </div>
 
@@ -75,8 +77,25 @@
                         <label>Parameter Value:</label>
                         <input type="number" id="paramValue" placeholder="e.g., 2">
                     </div>
-
-                    <button class="btn-primary" onclick="applyOperation()">⚡ Apply Operation</button>
+                    <div id="convolutionContainer" style="display: none;">
+                        <div class="input-group">
+                            <label>First Signal:</label>
+                            <select id="convSignal1"></select>
+                        </div>
+                        <div class="input-group">
+                            <label>Second Signal:</label>
+                            <select id="convSignal2"></select>
+                        </div>
+                    </div>
+                    <div class="operation-buttons">
+                        <button class="btn-primary" onclick="viewOperation()">👁️ View Operation</button>
+                        <button class="btn-primary" onclick="applyOperation()">⚡ Apply Operation</button>
+                    </div>
+                    
+                    <div class="operation-info">
+                        <small><strong>View:</strong> Preview only, no stacking</small>
+                        <small><strong>Apply:</strong> Stacks operations, adds to history</small>
+                    </div>
                 </div>
             </div>
 
@@ -105,14 +124,20 @@
                         <canvas id="outputChart"></canvas>
                     </div>
                 </div>
-
-                <button class="btn-transfer" onclick="transferOutputToOriginal()">
-                    🔄 Use Output as Original Signal
-                </button>
                 
                 <div class="history-panel history-panel-bottom">
                     <h3>📜 Operation History</h3>
-                    <div class="history-content" id="historyDisplay">
+                    <div class="history-content history-display" id="historyDisplay">
+                        <div class="history-empty">No operations applied yet</div>
+                    </div>
+                    <button class="btn-clear-history" onclick="clearHistory()">🗑️ Clear History</button>
+                </div>
+            </div>
+
+            <div class="right-panel">
+                <div class="history-panel">
+                    <h3>📜 Operation History</h3>
+                    <div class="history-content history-display" id="historyDisplay">
                         <div class="history-empty">No operations applied yet</div>
                     </div>
                     <button class="btn-clear-history" onclick="clearHistory()">🗑️ Clear History</button>

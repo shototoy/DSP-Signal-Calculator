@@ -1,12 +1,3 @@
-IF output signal not used as Original signal and you performed another operation then that should still be applied to original signal and not the previously operation notation. Thats correct. BUT
-Multiple operations on the same signal shouldnt be a "NEW" Step, rather modification of previous steps
+modify signal range to be set on selecting new signal not before output operation, accounting inf of course as well as Smart generation of chart that has limited range despite inf.
 
-Put Chart Toggle inside main panel grid so not to waste extra height space
-Problem in plotting signal that adds function AFTER performing operations. But if added 2 functions on the beginning and plot, it works
-
-CHECK PROBLEM if specific to Ramp function
-
-Feature to store composite function and can be added to new functions (feedback)
-Pressing Signal Type can have Operation option of Modulation (but then  we need to find a way for storage so we can build multiple functions, then OPERATE it to original signal as expanded)
-
-no, wrong concept for modulation. When pressing signal type, there is a modal which lets you select whether to add or subtract the signal. Add option to modulate. Also, storage should have a different section under Composite Function which lets us now what kind of signal is currently in storage, and pressing retrieve asks us the same (add, subtract, modulate)
+Also, responsivenewss for mobile layout, chart to small and appears condensed.
