@@ -6,6 +6,8 @@ const state = {
     outputIndices: [],
     originalChart: null,
     outputChart: null,
+    convChart1: null,
+    convChart2: null,
     currentSignalType: '',
     operationHistory: [],
     lastOperationKey: '',
@@ -659,13 +661,28 @@ function applyOperation() {
 }
 
 function updateChartLayout(isConvolution) {
-    const originalChartWrapper = document.querySelector('.chart-wrapper:first-of-type');
+    const chartWrappers = document.querySelectorAll('.chart-wrapper');
+    if (chartWrappers.length === 0) return;
+    
+    const originalChartWrapper = chartWrappers[0];
     const originalChartContainer = originalChartWrapper.querySelector('.chart-container');
     const originalChartTitle = originalChartWrapper.querySelector('.chart-title');
+    
+    if (!originalChartContainer || !originalChartTitle) return;
     
     if (state.originalChart) {
         state.originalChart.destroy();
         state.originalChart = null;
+    }
+    
+    if (state.convChart1) {
+        state.convChart1.destroy();
+        state.convChart1 = null;
+    }
+    
+    if (state.convChart2) {
+        state.convChart2.destroy();
+        state.convChart2 = null;
     }
     
     if (isConvolution) {
@@ -986,12 +1003,14 @@ function createChart(canvasId, indices, data, title, type, forceXMin = null, for
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
     
-    if ((type === 'original' && state.originalChart) || (type === 'output' && state.outputChart)) {
-        if (type === 'original') {
-            state.originalChart.destroy();
-        } else {
-            state.outputChart.destroy();
-        }
+    if (canvasId === 'convChart1' && state.convChart1) {
+        state.convChart1.destroy();
+    } else if (canvasId === 'convChart2' && state.convChart2) {
+        state.convChart2.destroy();
+    } else if (canvasId === 'originalChart' && state.originalChart) {
+        state.originalChart.destroy();
+    } else if (canvasId === 'outputChart' && state.outputChart) {
+        state.outputChart.destroy();
     }
 
     const minIndex = forceXMin !== null ? forceXMin : Math.min(...indices);
@@ -1099,9 +1118,13 @@ function createChart(canvasId, indices, data, title, type, forceXMin = null, for
         }
     });
 
-    if (type === 'original') {
+    if (canvasId === 'convChart1') {
+        state.convChart1 = chart;
+    } else if (canvasId === 'convChart2') {
+        state.convChart2 = chart;
+    } else if (canvasId === 'originalChart') {
         state.originalChart = chart;
-    } else {
+    } else if (canvasId === 'outputChart') {
         state.outputChart = chart;
     }
 }

@@ -764,7 +764,6 @@ input:focus, select:focus {
         min-height: 300px;
     }
 }
-
 .convolution-mode .chart-container {
     height: auto;
 }
@@ -773,6 +772,7 @@ input:focus, select:focus {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 15px;
+    width: 100%;
 }
 
 .conv-chart-item {
@@ -786,9 +786,13 @@ input:focus, select:focus {
     color: #495057;
     margin-bottom: 8px;
     text-align: center;
+    padding: 8px;
+    background: #f8f9fa;
+    border-radius: 4px;
 }
 
 .conv-chart-item canvas {
+    flex: 1;
     width: 100% !important;
-    height: 250px !important;
+    height: auto !important;
 }
