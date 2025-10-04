@@ -56,6 +56,13 @@ const SIGNAL_CONFIG = {
 };
 
 const OPERATION_CONFIG = {
+    convolve: {
+        apply: (indices, data, param) => {
+            return { indices: [], data: [] };
+        },
+        description: (param) => `Applied Convolution with stored signal`,
+        notation: (current, param) => `${current} * ${param}`
+    },
     shift: {
         apply: (indices, data, param) => ({
             indices: indices.map(n => n + param),
@@ -594,6 +601,12 @@ function applyOperation() {
     }
 
     const opType = getValue('operationType', 'shift', (v) => v);
+    
+    if (opType === 'convolve') {
+        applyConvolution();
+        return;
+    }
+    
     const param = getValue('paramValue', 0);
     
     const operation = OPERATION_CONFIG[opType];
@@ -643,6 +656,249 @@ function applyOperation() {
 
     createChart('originalChart', state.originalIndices, state.originalData, 'Original Signal: x[n]', 'original', state.globalXMin, state.globalXMax);
     createChart('outputChart', state.outputIndices, state.outputData, 'Output Signal: y[n]', 'output', state.globalXMin, state.globalXMax);
+}
+
+function updateChartLayout(isConvolution) {
+    const originalChartWrapper = document.querySelector('.chart-wrapper:first-of-type');
+    const originalChartContainer = originalChartWrapper.querySelector('.chart-container');
+    const originalChartTitle = originalChartWrapper.querySelector('.chart-title');
+    
+    if (state.originalChart) {
+        state.originalChart.destroy();
+        state.originalChart = null;
+    }
+    
+    if (isConvolution) {
+        originalChartWrapper.classList.add('convolution-mode');
+        originalChartContainer.innerHTML = `
+            <div class="conv-grid">
+                <div class="conv-chart-item">
+                    <div class="conv-chart-label">Signal 1: x[n]</div>
+                    <canvas id="convChart1"></canvas>
+                </div>
+                <div class="conv-chart-item">
+                    <div class="conv-chart-label">Signal 2: h[n]</div>
+                    <canvas id="convChart2"></canvas>
+                </div>
+            </div>
+        `;
+        originalChartTitle.textContent = 'Input Signals';
+    } else {
+        originalChartWrapper.classList.remove('convolution-mode');
+        originalChartContainer.innerHTML = '<canvas id="originalChart"></canvas>';
+        originalChartTitle.textContent = 'Original Signal: x[n]';
+        
+        if (state.originalData.length > 0) {
+            setTimeout(() => {
+                createChart('originalChart', state.originalIndices, state.originalData, 'Original Signal: x[n]', 'original', state.globalXMin, state.globalXMax);
+            }, 0);
+        }
+    }
+}
+function updateConvolutionOptions() {
+    const signal1Select = getElement('convSignal1');
+    const signal2Select = getElement('convSignal2');
+    
+    if (!signal1Select || !signal2Select) return;
+    
+    signal1Select.innerHTML = '';
+    signal2Select.innerHTML = '';
+    
+    if (state.originalData.length > 0) {
+        const currentNotation = buildNotation(state.compositeSignals.length > 0 ? state.compositeSignals : [{notation: 'Current signal'}]);
+        const option1 = document.createElement('option');
+        option1.value = 'current';
+        option1.textContent = `Current: ${currentNotation}`;
+        const option2 = document.createElement('option');
+        option2.value = 'current';
+        option2.textContent = `Current: ${currentNotation}`;
+        signal1Select.appendChild(option1);
+        signal2Select.appendChild(option2);
+    }
+    
+    if (state.storedSignals.length === 0 && state.originalData.length === 0) {
+        const emptyOption1 = document.createElement('option');
+        emptyOption1.textContent = 'No signals available';
+        emptyOption1.disabled = true;
+        const emptyOption2 = document.createElement('option');
+        emptyOption2.textContent = 'No signals available';
+        emptyOption2.disabled = true;
+        signal1Select.appendChild(emptyOption1);
+        signal2Select.appendChild(emptyOption2);
+    }
+    
+    state.storedSignals.forEach((stored, index) => {
+        const option1 = document.createElement('option');
+        option1.value = index;
+        option1.textContent = `Stored ${index + 1}: ${stored.notation}`;
+        const option2 = document.createElement('option');
+        option2.value = index;
+        option2.textContent = `Stored ${index + 1}: ${stored.notation}`;
+        signal1Select.appendChild(option1);
+        signal2Select.appendChild(option2);
+    });
+}
+
+function updateConvolutionUI() {
+    const opType = getElement('operationType');
+    if (!opType) return;
+    
+    const selectedOp = opType.value;
+    const paramInput = getElement('paramValue');
+    const convolutionContainer = getElement('convolutionContainer');
+    
+    if (selectedOp === 'convolve') {
+        if (paramInput && paramInput.parentElement) {
+            paramInput.parentElement.style.display = 'none';
+        }
+        if (convolutionContainer) {
+            convolutionContainer.style.display = 'block';
+            updateConvolutionOptions();
+        }
+        updateChartLayout(true);
+    } else {
+        if (paramInput && paramInput.parentElement) {
+            paramInput.parentElement.style.display = 'block';
+        }
+        if (convolutionContainer) {
+            convolutionContainer.style.display = 'none';
+        }
+        updateChartLayout(false);
+        if (state.originalData.length > 0) {
+            createChart('originalChart', state.originalIndices, state.originalData, 'Original Signal: x[n]', 'original', state.globalXMin, state.globalXMax);
+        }
+    }
+}
+
+function applyConvolution() {
+    const signal1Value = getValue('convSignal1', 'current', (v) => v);
+    const signal2Value = getValue('convSignal2', 'current', (v) => v);
+    
+    let data1, indices1, notation1;
+    let data2, indices2, notation2;
+
+    if (!signal1Value || !signal2Value) {
+        alert('Please select both signals for convolution!');
+        return;
+    }
+    
+    if (signal1Value === 'current') {
+        data1 = [...state.originalData];
+        indices1 = [...state.originalIndices];
+        notation1 = buildNotation(state.compositeSignals.length > 0 ? state.compositeSignals : [{notation: 'x[n]'}]);
+    } else {
+        const stored = state.storedSignals[parseInt(signal1Value)];
+        const tempIndices = [];
+        const tempData = [];
+        const start = getValue('globalRangeStart', -10, parseInt);
+        const end = getValue('globalRangeEnd', 10, parseInt);
+        
+        for (let n = start; n <= end; n++) {
+            tempIndices.push(n);
+            let result = 0;
+            let modulationProduct = 1;
+            let hasModulation = false;
+            
+            stored.signals.forEach(signal => {
+                const value = evaluateSignal(n, signal);
+                if (signal.operation === '*') {
+                    hasModulation = true;
+                    modulationProduct *= value;
+                } else if (signal.operation === '-') {
+                    result -= value;
+                } else {
+                    result += value;
+                }
+            });
+            
+            if (hasModulation) result *= modulationProduct;
+            tempData.push(result);
+        }
+        
+        data1 = tempData;
+        indices1 = tempIndices;
+        notation1 = stored.notation;
+    }
+    
+    if (signal2Value === 'current') {
+        data2 = [...state.originalData];
+        indices2 = [...state.originalIndices];
+        notation2 = buildNotation(state.compositeSignals.length > 0 ? state.compositeSignals : [{notation: 'h[n]'}]);
+    } else {
+        const stored = state.storedSignals[parseInt(signal2Value)];
+        const tempIndices = [];
+        const tempData = [];
+        const start = getValue('globalRangeStart', -10, parseInt);
+        const end = getValue('globalRangeEnd', 10, parseInt);
+        
+        for (let n = start; n <= end; n++) {
+            tempIndices.push(n);
+            let result = 0;
+            let modulationProduct = 1;
+            let hasModulation = false;
+            
+            stored.signals.forEach(signal => {
+                const value = evaluateSignal(n, signal);
+                if (signal.operation === '*') {
+                    hasModulation = true;
+                    modulationProduct *= value;
+                } else if (signal.operation === '-') {
+                    result -= value;
+                } else {
+                    result += value;
+                }
+            });
+            
+            if (hasModulation) result *= modulationProduct;
+            tempData.push(result);
+        }
+        
+        data2 = tempData;
+        indices2 = tempIndices;
+        notation2 = stored.notation;
+    }
+    
+    const minIndex = Math.min(...indices1) + Math.min(...indices2);
+    const maxIndex = Math.max(...indices1) + Math.max(...indices2);
+    
+    state.outputIndices = [];
+    state.outputData = [];
+    
+    for (let n = minIndex; n <= maxIndex; n++) {
+        state.outputIndices.push(n);
+        let sum = 0;
+        
+        for (let k = 0; k < data1.length; k++) {
+            const n1 = indices1[k];
+            const targetN = n - n1;
+            const idx2 = indices2.indexOf(targetN);
+            
+            if (idx2 !== -1) {
+                sum += data1[k] * data2[idx2];
+            }
+        }
+        
+        state.outputData.push(sum);
+    }
+    
+    state.appliedOperations = [];
+    state.tempWorkingData = null;
+    state.tempWorkingIndices = null;
+    
+    const allData = [...data1, ...data2, ...state.outputData];
+    const allIndices = [...indices1, ...indices2, ...state.outputIndices];
+    updateGlobalBounds(allData, allIndices);
+    
+    const convNotation = `(${notation1}) * (${notation2})`;
+    state.operationHistory.push({
+        signal: convNotation,
+        operation: 'Applied Convolution'
+    });
+    updateHistoryDisplay();
+    
+    createChart('convChart1', indices1, data1, 'Signal 1: x[n]', 'original', state.globalXMin, state.globalXMax);
+    createChart('convChart2', indices2, data2, 'Signal 2: h[n]', 'original', state.globalXMin, state.globalXMax);
+    createChart('outputChart', state.outputIndices, state.outputData, 'Output Signal: y[n] = Convolution', 'output', state.globalXMin, state.globalXMax);
 }
 
 function viewOperation() {

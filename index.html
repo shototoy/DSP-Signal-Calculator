@@ -62,13 +62,14 @@
                     
                     <div class="input-group">
                         <label>Operation Type:</label>
-                        <select id="operationType">
+                        <select id="operationType" onchange="updateConvolutionUI()">
                             <option value="shift">Time Shift: x[n - k]</option>
                             <option value="scale">Time Scale: x[an]</option>
                             <option value="fold">Time Folding: x[-n]</option>
                             <option value="add">Addition: x[n] + c</option>
                             <option value="multiply">Multiplication: x[n] × c</option>
                             <option value="reverse">Reverse Sequence</option>
+                            <option value="convolve">Convolution: x[n] * h[n]</option>
                         </select>
                     </div>
 
@@ -76,7 +77,16 @@
                         <label>Parameter Value:</label>
                         <input type="number" id="paramValue" placeholder="e.g., 2">
                     </div>
-
+                    <div id="convolutionContainer" style="display: none;">
+                        <div class="input-group">
+                            <label>First Signal:</label>
+                            <select id="convSignal1"></select>
+                        </div>
+                        <div class="input-group">
+                            <label>Second Signal:</label>
+                            <select id="convSignal2"></select>
+                        </div>
+                    </div>
                     <div class="operation-buttons">
                         <button class="btn-primary" onclick="viewOperation()">👁️ View Operation</button>
                         <button class="btn-primary" onclick="applyOperation()">⚡ Apply Operation</button>

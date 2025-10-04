@@ -764,3 +764,31 @@ input:focus, select:focus {
         min-height: 300px;
     }
 }
+
+.convolution-mode .chart-container {
+    height: auto;
+}
+
+.conv-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+.conv-chart-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.conv-chart-label {
+    font-weight: 600;
+    font-size: 14px;
+    color: #495057;
+    margin-bottom: 8px;
+    text-align: center;
+}
+
+.conv-chart-item canvas {
+    width: 100% !important;
+    height: 250px !important;
+}
