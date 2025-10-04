@@ -125,12 +125,19 @@
                     </div>
                 </div>
                 
-                <div class="history-panel history-panel-bottom">
-                    <h3>📜 Operation History</h3>
-                    <div class="history-content history-display" id="historyDisplay">
-                        <div class="history-empty">No operations applied yet</div>
+                <div class="history-panel-bottom" id="historyDrawer">
+                    <div class="history-drawer-handle" onclick="toggleHistoryDrawer()">
+                        <div class="drawer-toggle">
+                            <div class="drawer-notch"></div>
+                            <div class="drawer-icon">▲</div>
+                            <div class="drawer-title">History</div>
+                        </div>
                     </div>
-                    <button class="btn-clear-history" onclick="clearHistory()">🗑️ Clear History</button>
+                    <div class="history-panel">
+                        <h3>📜 Operation History</h3>
+                        <div class="history-content history-display"></div>
+                        <button class="btn-clear-history" onclick="clearHistory()">🗑️ Clear History</button>
+                    </div>
                 </div>
             </div>
 

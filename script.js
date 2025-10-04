@@ -1172,3 +1172,19 @@ function toggleSidebar() {
         toggleButton.style.opacity = sidebar.classList.contains('show') ? '1' : '0.3';
     }
 }
+
+function toggleHistoryDrawer() {
+    const drawer = document.getElementById('historyDrawer');
+    if (drawer) {
+        drawer.classList.toggle('expanded');
+    }
+}
+
+document.addEventListener('click', function(event) {
+    const drawer = document.getElementById('historyDrawer');
+    if (drawer && drawer.classList.contains('expanded')) {
+        if (!drawer.contains(event.target)) {
+            drawer.classList.remove('expanded');
+        }
+    }
+});
