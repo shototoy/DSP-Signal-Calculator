@@ -541,6 +541,12 @@ function plotComposite() {
         return;
     }
     
+    const opType = getElement('operationType');
+    if (opType && opType.value === 'convolve') {
+        opType.value = 'shift';
+        updateConvolutionUI();
+    }
+    
     state.appliedOperations = [];
     state.tempWorkingData = null;
     state.tempWorkingIndices = null;
@@ -954,17 +960,45 @@ function transferOutputToOriginal() {
         return;
     }
     
-    if (state.appliedOperations.length === 0) {
+    const opType = getElement('operationType');
+    const isConvolution = opType && opType.value === 'convolve';
+    
+    if (!isConvolution && state.appliedOperations.length === 0) {
         alert('No stacked operations to transfer! Use "Apply Operation" to stack operations before transferring.');
         return;
     }
     
-    const currentSignalNotation = buildNotation(state.compositeSignals.length > 0 ? state.compositeSignals : [{notation: 'Unknown signal'}]);
+    let finalNotation;
     
-    let finalNotation = currentSignalNotation;
-    state.appliedOperations.forEach(op => {
-        finalNotation = op.notation(finalNotation, op.param);
-    });
+    if (isConvolution) {
+        const signal1Value = getValue('convSignal1', 'current', (v) => v);
+        const signal2Value = getValue('convSignal2', 'current', (v) => v);
+        
+        let notation1, notation2;
+        
+        if (signal1Value === 'current') {
+            notation1 = buildNotation(state.compositeSignals.length > 0 ? state.compositeSignals : [{notation: 'x[n]'}]);
+        } else {
+            notation1 = state.storedSignals[parseInt(signal1Value)].notation;
+        }
+        
+        if (signal2Value === 'current') {
+            notation2 = buildNotation(state.compositeSignals.length > 0 ? state.compositeSignals : [{notation: 'h[n]'}]);
+        } else {
+            notation2 = state.storedSignals[parseInt(signal2Value)].notation;
+        }
+        
+        finalNotation = `(${notation1}) * (${notation2})`;
+        
+        opType.value = 'shift';
+        updateConvolutionUI();
+    } else {
+        const currentSignalNotation = buildNotation(state.compositeSignals.length > 0 ? state.compositeSignals : [{notation: 'Unknown signal'}]);
+        finalNotation = currentSignalNotation;
+        state.appliedOperations.forEach(op => {
+            finalNotation = op.notation(finalNotation, op.param);
+        });
+    }
     
     state.transferredData = [...state.outputData];
     state.transferredIndices = [...state.outputIndices];
@@ -995,7 +1029,6 @@ function transferOutputToOriginal() {
     
     createChart('originalChart', state.originalIndices, state.originalData, 'Original Signal: x[n]', 'original', state.globalXMin, state.globalXMax);
 }
-
 function createChart(canvasId, indices, data, title, type, forceXMin = null, forceXMax = null) {
     const canvas = getElement(canvasId);
     if (!canvas) return;
