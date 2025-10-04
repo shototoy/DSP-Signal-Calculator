@@ -1066,6 +1066,7 @@ function createChart(canvasId, indices, data, title, type, forceXMin = null, for
     const fillColor = type === 'original' ? 'rgba(102, 126, 234, 0.1)' : 'rgba(240, 147, 251, 0.1)';
 
     const isMobile = window.innerWidth <= 1200;
+    const isConvChart = canvasId === 'convChart1' || canvasId === 'convChart2';
     
     const datasets = state.isDiscreteView ? [
         {
@@ -1080,7 +1081,7 @@ function createChart(canvasId, indices, data, title, type, forceXMin = null, for
         {
             type: 'scatter',
             data: chartData,
-            pointRadius: isMobile ? 3.5 : 5,
+            pointRadius: isMobile ? (isConvChart ? 3 : 3.5) : 5,
             pointBackgroundColor: color,
             pointBorderColor: '#fff',
             pointBorderWidth: isMobile ? 1 : 2,
@@ -1094,7 +1095,7 @@ function createChart(canvasId, indices, data, title, type, forceXMin = null, for
             borderColor: color,
             backgroundColor: fillColor,
             borderWidth: isMobile ? 1.5 : 2,
-            pointRadius: isMobile ? 3.5 : 5,
+            pointRadius: isMobile ? (isConvChart ? 3 : 3.5) : 5,
             pointBackgroundColor: color,
             pointBorderColor: '#fff',
             pointBorderWidth: isMobile ? 1 : 2,
@@ -1115,7 +1116,7 @@ function createChart(canvasId, indices, data, title, type, forceXMin = null, for
                 padding: {
                     left: 0,
                     right: isMobile ? 2 : 5,
-                    top: isMobile ? 2 : 5,
+                    top: isMobile ? (isConvChart ? 1 : 2) : 5,
                     bottom: 0
                 }
             },
@@ -1153,14 +1154,14 @@ function createChart(canvasId, indices, data, title, type, forceXMin = null, for
                     },
                     ticks: {
                         font: { 
-                            size: isMobile ? 9 : 13, 
+                            size: isMobile ? (isConvChart ? 8 : 9) : 13, 
                             weight: '500' 
                         },
                         maxRotation: 0,
                         autoSkip: true,
                         autoSkipPadding: isMobile ? 8 : 15,
                         padding: isMobile ? 1 : 3,
-                        maxTicksLimit: isMobile ? 8 : 10
+                        maxTicksLimit: isMobile ? (isConvChart ? 6 : 8) : 10
                     }
                 },
                 y: {
@@ -1185,10 +1186,10 @@ function createChart(canvasId, indices, data, title, type, forceXMin = null, for
                     },
                     ticks: {
                         font: { 
-                            size: isMobile ? 9 : 13, 
+                            size: isMobile ? (isConvChart ? 8 : 9) : 13, 
                             weight: '500' 
                         },
-                        maxTicksLimit: isMobile ? 5 : 7,
+                        maxTicksLimit: isMobile ? (isConvChart ? 4 : 5) : 7,
                         padding: isMobile ? 1 : 3
                     }
                 }
