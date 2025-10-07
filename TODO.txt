@@ -5,5 +5,3 @@ Also, responsivenewss for mobile layout, chart to small and appears condensed.
 on convolution, 2 signal remains continuous despite toggling to discrete
 
 problem on assignment z[n] wrong amplitude at the middle if subtracting
-
-Mirroring of
