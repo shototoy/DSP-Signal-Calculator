@@ -1,3 +1,9 @@
 modify signal range to be set on selecting new signal not before output operation, accounting inf of course as well as Smart generation of chart that has limited range despite inf.
 
 Also, responsivenewss for mobile layout, chart to small and appears condensed.
+
+on convolution, 2 signal remains continuous despite toggling to discrete
+
+problem on assignment z[n] wrong amplitude at the middle if subtracting
+
+Mirroring of
